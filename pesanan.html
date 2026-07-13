@@ -10,7 +10,9 @@
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org https://app.sandbox.midtrans.com; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://app.sandbox.midtrans.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' https://app.sandbox.midtrans.com;">
+    
+    <!-- SECURITY PATCH: Menghapus app.sandbox.midtrans.com untuk mencegah Client-Side Supply Chain Attack (#6) dan CSP Bypass (#72) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     
@@ -451,7 +453,7 @@
                     <div class="tutorial-step-icon"><i class="fas fa-qrcode"></i></div>
                     <div class="tutorial-step-content">
                         <strong>PILIHAN 1: QRIS / E-Wallet</strong>
-                        <p>Scan kode QRIS yang muncul di aplikasi Snap. Buka GoPay, OVO, Dana, LinkAja, atau Mobile Banking Anda, pilih scan, lalu konfirmasi pembayaran.</p>
+                        <p>Scan kode QRIS yang muncul di layar. Buka GoPay, OVO, Dana, LinkAja, atau Mobile Banking Anda, pilih scan, lalu konfirmasi pembayaran.</p>
                     </div>
                 </div>
                 
@@ -459,7 +461,7 @@
                     <div class="tutorial-step-icon"><i class="fas fa-university"></i></div>
                     <div class="tutorial-step-content">
                         <strong>PILIHAN 2: Virtual Account</strong>
-                        <p>Salin nomor VA (BCA/Mandiri/BNI) dari menu Snap. Masuk ke M-Banking Anda -> Transfer -> Virtual Account, masukkan nomor, dan pastikan nominal sesuai.</p>
+                        <p>Salin nomor VA dari layar pembayaran. Masuk ke M-Banking Anda -> Transfer -> Virtual Account, masukkan nomor, dan pastikan nominal sesuai.</p>
                     </div>
                 </div>
                 
@@ -467,7 +469,7 @@
                     <div class="tutorial-step-icon"><i class="fas fa-store"></i></div>
                     <div class="tutorial-step-content">
                         <strong>PILIHAN 3: Alfamart / Indomaret</strong>
-                        <p>Tunjukkan kode pembayaran kepada kasir. Informasikan pembayaran untuk merchant Midtrans, bayar tunai, dan simpan struk Anda.</p>
+                        <p>Tunjukkan kode pembayaran kepada kasir. Informasikan pembayaran untuk merchant yang tertera, bayar tunai, dan simpan struk Anda.</p>
                     </div>
                 </div>
                 
@@ -484,7 +486,7 @@
     <script>
         "use strict";
 
-        // Mencegah eksploitasi Prototype Pollution
+        // Mencegah eksploitasi Prototype Pollution dan DOM Clobbering
         Object.freeze(Object.prototype);
         Object.freeze(Array.prototype);
         Object.freeze(String.prototype);
@@ -794,7 +796,7 @@
             // =========================================================================
             // FUNGSI BARU: MINTA, LOADING, DAN UNDUH ARSIP PDF (SMART POLLING)
             // =========================================================================
-            let arsipCheckInterval = null; // Variabel untuk menyimpan timer
+            let arsipCheckInterval = null;
 
             Object.defineProperty(window, 'mintaArsipPDF', {
                 value: async function(event, isAutoCheck = false) {
@@ -814,7 +816,6 @@
 
                     if (!session || !session.access_token) return;
 
-                    // Hentikan timer sebelumnya jika ada
                     if (arsipCheckInterval && !isAutoCheck) {
                         clearInterval(arsipCheckInterval);
                         arsipCheckInterval = null;
@@ -846,14 +847,14 @@
 
                         if (response.ok) {
                             if (result.download_url) {
-                                // SKENARIO 1: PDF SUDAH JADI!
+                                // SKENARIO 1: PDF SUDAH JADI
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 
                                 if(btnEl) {
                                     btnEl.disabled = false;
                                     btnEl.style.opacity = '1';
                                     btnEl.innerHTML = "<i class='fas fa-file-pdf'></i> Unduh PDF Sekarang";
-                                    btnEl.style.background = "#27ae60"; // Berubah hijau
+                                    btnEl.style.background = "#27ae60"; 
                                     btnEl.style.color = "#ffffff";
                                 }
 
@@ -861,7 +862,6 @@
                                     pesanEl.style.color = "#27ae60";
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip siap! Mengunduh file Anda...";
                                     
-                                    // Proses penyedotan file secara rahasia (Blob)
                                     try {
                                         const dlRes = await fetch(`${BASE_REQ_URL}${result.download_url}`, {
                                             method: "GET",
@@ -893,7 +893,7 @@
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip untuk bulan ini sudah siap diunduh.";
                                 }
                             } else {
-                                // SKENARIO 2: BARU MASUK ANTREAN PERTAMA KALI
+                                // SKENARIO 2: BARU MASUK ANTREAN
                                 if(btnEl) {
                                     btnEl.disabled = true;
                                     btnEl.style.opacity = '0.7';
@@ -904,13 +904,12 @@
                                 pesanEl.style.color = "var(--accent-color)";
                                 pesanEl.innerHTML = `<i class='fas fa-tools'></i> ${escapeHTML(result.message)} <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(File akan otomatis terunduh saat selesai. Anda boleh pindah halaman dan kembali lagi nanti).</span>`;
                                 
-                                // Mulai timer mengecek setiap 5 detik
                                 if (!arsipCheckInterval) {
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             }
                         } else {
-                            // SKENARIO 3: ERROR ATAU SEDANG DALAM PROSES RAKIT
+                            // SKENARIO 3: ERROR ATAU SEDANG DIRAKIT
                             if (result.error && result.error.includes("sedang dirakit")) {
                                 if(btnEl) {
                                     btnEl.disabled = true;
@@ -926,7 +925,6 @@
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             } else {
-                                // Jika Error beneran
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 if(btnEl) { 
                                     btnEl.disabled = false; 
@@ -972,20 +970,15 @@
                 configurable: false
             });
 
-            // =========================================================================
-            // FILTER ORDER SEKALIGUS MENGONTROL KOTAK ARSIP
-            // =========================================================================
             Object.defineProperty(window, 'filterOrders', {
                 value: function(status) {
                     currentStatusFilter = String(status);
                     
-                    // Ganti gaya tab yang aktif
                     document.querySelectorAll('.tab-btn').forEach(btn => {
                         if (btn.getAttribute('data-status') === status) btn.classList.add('active');
                         else btn.classList.remove('active');
                     });
                     
-                    // Logika Menyembunyikan/Memunculkan Kotak Arsip
                     const archiveBox = document.getElementById('archiveBoxContainer');
                     if (archiveBox) {
                         if (status === 'Selesai' || status === 'Dibatalkan') {
@@ -1240,6 +1233,9 @@
                 container.appendChild(fragment);
             }
 
+            // =========================================================================
+            // SECURITY PATCH: MIGRASI DARI SNAP MIDTRANS KE URL REDIRECT PAKKASIR
+            // =========================================================================
             Object.defineProperty(window, 'openPaymentGateway', {
                 value: function(orderId, totalPrice, existingToken) {
                     activePaymentOrderId = String(orderId);
@@ -1248,31 +1244,20 @@
                     document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                     document.getElementById('textInvoiceTotal').innerText = activePaymentTotalText;
 
+                    // Mengambil URL dari localstorage jika user me-refresh halaman, atau dari DB
                     let safeToken = (existingToken && existingToken !== 'undefined' && existingToken !== '') 
                         ? String(existingToken) 
                         : localStorage.getItem(`token_${activePaymentOrderId}`);
                         
                     activePaymentToken = safeToken;
 
-                    if (safeToken && window.snap) {
+                    // Logika Redirect Pakkasir: Token dari backend dijamin berawalan http jika sukses
+                    if (safeToken && safeToken.startsWith("http")) {
                         document.getElementById('paymentTutorialModal').classList.remove('active');
-                        
-                        window.snap.pay(safeToken, {
-                            onSuccess: function(result){
-                                window.showNotification("Sukses", "Pembayaran Anda berhasil diverifikasi secara lunas!", "success");
-                                fetchOrders();
-                            },
-                            onPending: function(result){
-                                window.showNotification("Pending", "Menunggu proses transfer dana Anda diselesaikan.", "warning");
-                            },
-                            onError: function(result){
-                                window.showNotification("Gagal", "Transaksi ditolak atau koneksi bank terputus.", "error");
-                            },
-                            onClose: function(){
-                                document.getElementById('paymentTutorialModal').classList.add('active');
-                            }
-                        });
+                        // Lemparkan klien langsung ke halaman pembayaran Pakkasir
+                        window.location.href = safeToken;
                     } else {
+                        // Tampilkan modal manual transfer jika URL gateway gagal / bayar di tempat
                         document.getElementById('paymentTutorialModal').classList.add('active');
                     }
                 },
@@ -1290,26 +1275,17 @@
 
             Object.defineProperty(window, 'relaunchSnapWidget', {
                 value: function() {
-                    if (!window.snap) {
-                        window.showNotification("Sistem Sibuk", "Gagal memuat sistem widget pembayaran. Ikuti instruksi transfer manual di layar.", "warning");
-                        return;
-                    }
+                    // Coba panggil ulang gateway jika tombol "Buka Ulang Panel Bayar" diklik
                     window.openPaymentGateway(activePaymentOrderId, 0, activePaymentToken);
                 },
                 writable: false,
                 configurable: false
             });
 
-            function loadMidtransDynamically() {
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js'; 
-    script.setAttribute('data-client-key', 'Mid-client-93w9ptgEHoMbavn8'); 
-    document.head.appendChild(script);
-}
+            // Menghapus fungsi loadMidtransDynamically() untuk mencegah kerentanan DOM Clobbering 
+            // dan Client-Side Supply Chain Attack dari script eksternal.
 
             document.addEventListener('DOMContentLoaded', () => {
-                loadMidtransDynamically();
                 loadFooterData();
                 fetchOrders();
             });
