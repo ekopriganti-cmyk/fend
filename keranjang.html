@@ -11,7 +11,8 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org https://app.sandbox.midtrans.com; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://app.sandbox.midtrans.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self' https://app.sandbox.midtrans.com;">
+    <!-- SECURITY PATCH: Menghapus app.sandbox.midtrans.com untuk mencegah Client-Side Supply Chain Attack (#6) -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" referrerpolicy="no-referrer" />
@@ -1207,7 +1208,6 @@
 
                     const courierLogos = {
                         // 1. Kamus Logo Varian Spesifik (KUNCI KOMBINASI: "perusahaan_varian")
-                        // Silakan ganti URL 'https://...' di bawah ini dengan link gambar logo khusus varian yang Anda miliki
                         "jne_yes": "https://placehold.co/50x20/e0e5ec/0984e3?text=JNE+YES",
                         "jne_jtr": "https://placehold.co/50x20/e0e5ec/0984e3?text=JTR+CARGO",
                         "jnt_ez": "https://placehold.co/50x20/e0e5ec/e3000f?text=JNT+EZ",
@@ -1232,10 +1232,8 @@
                         const safeType = escapeHTML(String(c.type));
                         const cName = `${safeCompany.toUpperCase()} - ${safeType.toUpperCase()}`;
                         
-                        // Kunci Kombinasi (Contoh: "jne_yes")
                         const variantKey = `${companyRaw}_${typeRaw}`;
                         
-                        // Sistem Gugur (Cek Varian Khusus -> Cek Induk Utama -> Gambar Abu-abu Default)
                         const logoUrl = courierLogos[variantKey] || courierLogos[companyRaw] || 'https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir';
                         
                         let cleanDuration = c.duration ? String(c.duration).replace(/days|day/gi, '').trim() : '';
@@ -1444,7 +1442,7 @@
                 // Basis kalkulasi total sebelum Fee Payment Gateway
                 let baseAmount = rawSubtotal - appliedDiscount + shippingCost + platform_fee_transaksi + platform_fee_ongkir;
                 
-                // Kalkulasi Dinamis Midtrans (e.g., QRIS 0.7% atau VA 4000)
+                // Kalkulasi Dinamis Pakkasir/Gateway (e.g., QRIS 0.7% atau VA 4000)
                 let finalGrossFloat = (baseAmount + selectedPaymentFixed) / (1.0 - selectedPaymentPct);
                 let finalGross = Math.round(finalGrossFloat);
                 
@@ -1493,7 +1491,7 @@
                     </div>
                 `;
                 
-                // Menampilkan Fee Midtrans (QRIS/VA) jika ada
+                // Menampilkan Fee Payment Gateway jika ada
                 if (adminFeeAmount > 0) {
                     html += `
                     <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
@@ -1554,18 +1552,25 @@
                 configurable: false
             });
             
+            // =========================================================================
+            // SECURITY PATCH: MIGRASI KE REDIRECT PAKKASIR
+            // =========================================================================
             Object.defineProperty(window, 'executeCheckout', {
                 value: async function() {
+                    // ANTI SPAM ROBOT & RACE CONDITION
                     if(isCheckingOut) return;
-                    isCheckingOut = true; window.closeConfirmModal();
+                    isCheckingOut = true; 
+                    
+                    window.closeConfirmModal();
                     const btn = document.getElementById('checkoutBtn');
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; 
+                    btn.disabled = true;
                     
                     try {
                         const voucherCodes = activeVouchers.map(v => String(v.code));
                         const payloadItems = cartItems.map(x => ({ product_id: x.product_id, quantity: Number(x.quantity) }));
 
-                        // HANYA MENGIRIM ONGKIR ASLI KE BACKEND. Backend akan menambahkan +2000 sendiri (Anti-Tampering)
+                        // HANYA MENGIRIM ONGKIR ASLI KE BACKEND. Backend akan menambahkan +2000 sendiri (Anti-Tampering #23)
                         const res = await fetch(`${BASE_URL}/api/checkout`, { 
                             method: 'POST', 
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
@@ -1596,48 +1601,36 @@
                         if (cartBadge) { cartBadge.style.display = 'none'; cartBadge.innerText = '0'; }
                         if (mobileCartBadge) { mobileCartBadge.style.display = 'none'; mobileCartBadge.innerText = '0'; }
 
-                        if (result.midtrans_token) {
-                            localStorage.setItem(`token_${result.order_id}`, result.midtrans_token);
+                        // 🚀 REDIRECT KE URL PAKKASIR
+                        // Menggunakan fallback result.midtrans_token jika backend di-patch tanpa merubah nama key JSON
+                        let redirectUrl = result.payment_url || result.midtrans_token;
+                        
+                        if (redirectUrl && String(redirectUrl).startsWith("http")) {
+                            // Simpan link pembayaran agar bisa dilanjutkan di halaman pesanan jika user menutup tab
+                            localStorage.setItem(`token_${result.order_id}`, redirectUrl);
                             
-                            window.snap.pay(result.midtrans_token, {
-                                onSuccess: function(paymentResult){
-                                    showNotification("Pembayaran Sukses!", "Pesanan Anda sudah lunas dan segera diproses.", "success", "pesanan.html");
-                                },
-                                onPending: function(paymentResult){
-                                    showNotification("Menunggu Pembayaran", "Selesaikan pembayaran via ATM/M-Banking sesuai instruksi.", "warning", "pesanan.html");
-                                },
-                                onError: function(paymentResult){
-                                    showNotification("Gagal", "Pembayaran ditolak atau terjadi kesalahan jaringan.", "error");
-                                },
-                                onClose: function(){
-                                    showNotification("Perhatian", "Anda menutup halaman sebelum menyelesaikan pembayaran.", "warning", "pesanan.html");
-                                }
-                            });
+                            // Lempar klien ke halaman Pakkasir
+                            window.location.href = redirectUrl;
                         } else {
-                            showNotification("Pesanan Dibuat!", "Menunggu sistem pembayaran.", "success", "pesanan.html");
+                            // Jika pembayaran Cash/COD atau gateway tidak merespon URL dengan benar
+                            showNotification("Pesanan Dibuat!", "Silakan cek halaman riwayat pesanan Anda.", "success", "pesanan.html");
                         }
                     } catch(e) {
                         showNotification("Checkout Gagal", escapeHTML(e.message), "error");
                     } finally {
-                        btn.innerText = "Buat Pesanan"; btn.disabled = false; isCheckingOut = false;
+                        btn.innerText = "Buat Pesanan"; 
+                        btn.disabled = false; 
+                        isCheckingOut = false; // Buka kembali kunci setelah selesai
                     }
                 },
                 writable: false,
                 configurable: false
             });
 
-            function loadMidtransScriptDynamically() {
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
-    // Ganti teks di bawah dengan Client Key Midtrans Anda
-    script.setAttribute('data-client-key', 'Mid-client-93w9ptgEHoMbavn8'); 
-    document.head.appendChild(script);
-}
+            // Menghapus fungsi loadMidtransScriptDynamically() yang sudah usang
 
             window.addEventListener('DOMContentLoaded', async () => { 
                 updateNavUI(); 
-                loadMidtransScriptDynamically(); 
                 await fetchProductsCatalog(); 
                 loadCart(); 
             });
