@@ -284,7 +284,6 @@
                 <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px; width: 18px; height: 18px; padding: 0;">0</span>
             </a>
             
-            <!-- Elemen dinamis Login/Profil (Sudah diperbaiki) -->
             <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
                 <i class="fas fa-sign-in-alt"></i> <span>Login</span>
             </a>
@@ -457,13 +456,15 @@
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
                         <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px;">-</span>
-                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
                     </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Salin dan transfer tepat sesuai nominal agar otomatis terverifikasi oleh sistem.</p>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Pastikan nominal transfer sesuai agar otomatis terverifikasi oleh sistem.</p>
                 </div>
             </div>
             
-            <button class="neu-btn" onclick="window.closePaymentTutorial()" style="background: var(--bg-color); color: var(--text-muted); border: none;">Tutup</button>
+            <button class="neu-btn" onclick="window.changePaymentMethodPakasir()" style="background: var(--bg-color); color: var(--accent-color); border: 1px dashed rgba(9, 132, 227, 0.3); margin-bottom: 10px;">
+                <i class="fas fa-exchange-alt"></i> Ganti Metode Pembayaran
+            </button>
+            <button class="neu-btn" onclick="window.closePaymentTutorial()" style="background: var(--bg-color); color: var(--text-muted); border: none; box-shadow: var(--neu-flat-sm);">Tutup</button>
         </div>
     </div>
 
@@ -591,19 +592,6 @@
                 configurable: false
             });
             
-            Object.defineProperty(window, 'copyToClipboard', {
-                value: function(elementId) {
-                    const text = document.getElementById(elementId).innerText;
-                    navigator.clipboard.writeText(text).then(() => {
-                        showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success");
-                    }).catch(err => {
-                        showNotification("Gagal", "Gagal menyalin nomor.", "error");
-                    });
-                },
-                writable: false,
-                configurable: false
-            });
-
             function handleLogout() {
                 localStorage.removeItem('user_session'); 
                 window.showNotification("Sesi Berakhir", "Tiket login Anda telah kedaluwarsa. Silakan login kembali.", "warning", "login.html");
@@ -794,7 +782,7 @@
             // =========================================================================
             // FUNGSI BARU: MINTA, LOADING, DAN UNDUH ARSIP PDF (SMART POLLING)
             // =========================================================================
-            let arsipCheckInterval = null; // Variabel untuk menyimpan timer
+            let arsipCheckInterval = null;
 
             Object.defineProperty(window, 'mintaArsipPDF', {
                 value: async function(event, isAutoCheck = false) {
@@ -814,7 +802,6 @@
 
                     if (!session || !session.access_token) return;
 
-                    // Hentikan timer sebelumnya jika ada
                     if (arsipCheckInterval && !isAutoCheck) {
                         clearInterval(arsipCheckInterval);
                         arsipCheckInterval = null;
@@ -846,14 +833,14 @@
 
                         if (response.ok) {
                             if (result.download_url) {
-                                // SKENARIO 1: PDF SUDAH JADI!
+                                // SKENARIO 1: PDF SUDAH JADI
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 
                                 if(btnEl) {
                                     btnEl.disabled = false;
                                     btnEl.style.opacity = '1';
                                     btnEl.innerHTML = "<i class='fas fa-file-pdf'></i> Unduh PDF Sekarang";
-                                    btnEl.style.background = "#27ae60"; // Berubah hijau
+                                    btnEl.style.background = "#27ae60"; 
                                     btnEl.style.color = "#ffffff";
                                 }
 
@@ -861,7 +848,6 @@
                                     pesanEl.style.color = "#27ae60";
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip siap! Mengunduh file Anda...";
                                     
-                                    // Proses penyedotan file secara rahasia (Blob)
                                     try {
                                         const dlRes = await fetch(`${BASE_REQ_URL}${result.download_url}`, {
                                             method: "GET",
@@ -893,7 +879,7 @@
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip untuk bulan ini sudah siap diunduh.";
                                 }
                             } else {
-                                // SKENARIO 2: BARU MASUK ANTREAN PERTAMA KALI
+                                // SKENARIO 2: BARU MASUK ANTREAN
                                 if(btnEl) {
                                     btnEl.disabled = true;
                                     btnEl.style.opacity = '0.7';
@@ -904,13 +890,12 @@
                                 pesanEl.style.color = "var(--accent-color)";
                                 pesanEl.innerHTML = `<i class='fas fa-tools'></i> ${escapeHTML(result.message)} <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(File akan otomatis terunduh saat selesai. Anda boleh pindah halaman dan kembali lagi nanti).</span>`;
                                 
-                                // Mulai timer mengecek setiap 5 detik
                                 if (!arsipCheckInterval) {
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             }
                         } else {
-                            // SKENARIO 3: ERROR ATAU SEDANG DALAM PROSES RAKIT
+                            // SKENARIO 3: ERROR ATAU SEDANG DIRAKIT
                             if (result.error && result.error.includes("sedang dirakit")) {
                                 if(btnEl) {
                                     btnEl.disabled = true;
@@ -926,7 +911,6 @@
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             } else {
-                                // Jika Error beneran
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 if(btnEl) { 
                                     btnEl.disabled = false; 
@@ -972,20 +956,15 @@
                 configurable: false
             });
 
-            // =========================================================================
-            // FILTER ORDER SEKALIGUS MENGONTROL KOTAK ARSIP
-            // =========================================================================
             Object.defineProperty(window, 'filterOrders', {
                 value: function(status) {
                     currentStatusFilter = String(status);
                     
-                    // Ganti gaya tab yang aktif
                     document.querySelectorAll('.tab-btn').forEach(btn => {
                         if (btn.getAttribute('data-status') === status) btn.classList.add('active');
                         else btn.classList.remove('active');
                     });
                     
-                    // Logika Menyembunyikan/Memunculkan Kotak Arsip
                     const archiveBox = document.getElementById('archiveBoxContainer');
                     if (archiveBox) {
                         if (status === 'Selesai' || status === 'Dibatalkan') {
@@ -1267,30 +1246,25 @@
                     document.getElementById('popupVaContainer').style.display = 'none';
                     document.getElementById('paymentTutorialModal').classList.add('active');
 
-                    // Ambil payment_number (QRIS/VA) dari Server kita, karena kita tidak bisa ambil langsung dari Pakasir (CORS / Keamanan API Key)
                     try {
-                        // Karena kita tidak menyimpan 'payment_number' secara eksplisit di DB saat ini (hanya URL-nya),
-                        // Maka tombol 'Bayar Sekarang' di menu Pesanan akan menampilkan instruksi & Link Fallback, 
-                        // ATAU kita ekstrak jika user belum pernah merefresh halaman sejak checkout.
-                        
                         const lowerMethod = String(paymentMethodStr).toLowerCase();
                         
                         if (lowerMethod.includes("qris") || lowerMethod.includes("wallet")) {
                             document.getElementById('popupVaContainer').style.display = 'none';
                             document.getElementById('popupQrisContainer').style.display = 'flex';
-                            document.getElementById('qrcodeBox').innerHTML = `<a href="${savedUrl}" target="_blank" style="text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><i class="fas fa-qrcode fa-3x" style="color:var(--accent-color); margin-bottom:10px;"></i><span style="font-size:12px; font-weight:bold; color:var(--text-main);">Klik untuk melihat<br>QRIS Code</span></a>`;
+                            
+                            // Amankan rendering URL ke dalam tag a href
+                            const safeAhref = escapeHTML(savedUrl);
+                            document.getElementById('qrcodeBox').innerHTML = `<a href="${safeAhref}" target="_blank" style="text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><i class="fas fa-qrcode fa-3x" style="color:var(--accent-color); margin-bottom:10px;"></i><span style="font-size:12px; font-weight:bold; color:var(--text-main);">Klik untuk melihat<br>QRIS Code</span></a>`;
                         } else {
                             document.getElementById('popupQrisContainer').style.display = 'none';
                             document.getElementById('popupVaContainer').style.display = 'flex';
                             document.getElementById('popupVaLabel').innerText = "Link Virtual Account";
                             
-                            let shortUrl = savedUrl;
-                            if (shortUrl.length > 25) shortUrl = shortUrl.substring(0, 22) + "...";
-                            
+                            const safeAhref = escapeHTML(savedUrl);
                             document.getElementById('popupVaNumber').innerText = "Buka Link Bayar";
-                            document.getElementById('popupVaNumber').innerHTML = `<a href="${savedUrl}" target="_blank" style="color:var(--accent-color); text-decoration:none;">Buka Link Bayar <i class="fas fa-external-link-alt"></i></a>`;
+                            document.getElementById('popupVaNumber').innerHTML = `<a href="${safeAhref}" target="_blank" style="color:var(--accent-color); text-decoration:none;">Buka Link Bayar <i class="fas fa-external-link-alt"></i></a>`;
                         }
-
                     } catch (e) {
                         window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
                     }
@@ -1302,6 +1276,22 @@
             Object.defineProperty(window, 'closePaymentTutorial', {
                 value: function() {
                     document.getElementById('paymentTutorialModal').classList.remove('active');
+                },
+                writable: false,
+                configurable: false
+            });
+
+            // FUNGSI GANTI METODE PEMBAYARAN VIA PAKASIR
+            Object.defineProperty(window, 'changePaymentMethodPakasir', {
+                value: function() {
+                    let savedUrl = localStorage.getItem(`token_${activePaymentOrderId}`);
+                    if (savedUrl && savedUrl.startsWith("https://app.pakasir.com/")) {
+                        // Menghapus parameter '&qris_only=1' jika ada, agar pengguna bisa mengganti metode di portal Pakasir
+                        let changeUrl = savedUrl.replace('&qris_only=1', '').replace('?qris_only=1', '');
+                        window.open(changeUrl, '_blank');
+                    } else {
+                        window.showNotification("Gagal", "Gagal membuka menu metode pembayaran.", "error");
+                    }
                 },
                 writable: false,
                 configurable: false
