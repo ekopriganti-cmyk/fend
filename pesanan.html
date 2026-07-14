@@ -228,6 +228,18 @@
         .pay-logo-wrapper { display: flex; align-items: center; gap: 10px; }
         .pay-logo-img { height: 16px; width: auto; max-width: 50px; object-fit: contain; border-radius: 4px; transition: all 0.3s ease; }
         [data-theme="dark"] .pay-logo-wrapper .pay-logo-img { background-color: #ffffff; padding: 2px 6px; }
+
+        /* ============================================================== */
+        /* FLOATING TOAST NOTIFICATION (NEW)                              */
+        /* ============================================================== */
+        .toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
+        .toast { background: var(--bg-color); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1), var(--neu-flat); display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; color: var(--text-main); opacity: 0; transform: translateY(-20px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        [data-theme="dark"] .toast { box-shadow: 0 10px 30px rgba(0,0,0,0.5), var(--neu-flat); }
+        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+        .toast-icon { font-size: 18px; }
+        .toast-icon.success { color: #27ae60; }
+        .toast-icon.error { color: #ff4757; }
+        .toast-icon.warning { color: #e67e22; }
     </style>
 <script src="analytics.js" async defer></script>     
 </head>
@@ -334,7 +346,7 @@
         <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
     </nav>
 
-    <!-- Modal Notifikasi -->
+    <!-- Modal Notifikasi Biasa -->
     <div class="modal-overlay" id="notificationModal">
         <div class="modal-content" style="max-width: 320px; text-align: center; align-items: center; padding: 30px 20px;">
             <div id="notifIcon" style="font-size: 45px; margin-bottom: 15px; display: flex; justify-content: center; width: 100%;"></div>
@@ -573,6 +585,40 @@
                 return "Rp " + parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
             }
 
+            // =========================================================================
+            // FLOATING TOAST NOTIFICATION (AMAN & NON-BLOCKING)
+            // =========================================================================
+            window.showToast = function(message, type = 'success') {
+                let container = document.getElementById('toastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toastContainer';
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                
+                let iconClass = 'fa-check-circle success';
+                if (type === 'error') iconClass = 'fa-times-circle error';
+                if (type === 'warning') iconClass = 'fa-exclamation-triangle warning';
+                
+                toast.innerHTML = `<i class="fas ${iconClass} toast-icon"></i> <span>${escapeHTML(message)}</span>`;
+                container.appendChild(toast);
+                
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if(toast.parentNode) toast.parentNode.removeChild(toast);
+                    }, 400); 
+                }, 3000);
+            };
+
             window.showNotification = function(title, message, type, redirectUrl = null) {
                 const notifModal = document.getElementById('notificationModal');
                 const notifIcon = document.getElementById('notifIcon');
@@ -604,12 +650,13 @@
                 notifModal.classList.add('active');
             };
             
+            // Berubah menggunakan showToast
             window.copyToClipboard = function(elementId) {
                 const text = document.getElementById(elementId).innerText;
                 navigator.clipboard.writeText(text).then(() => { 
-                    window.showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); 
+                    window.showToast("Nomor berhasil disalin ke clipboard!", "success"); 
                 }).catch(err => { 
-                    window.showNotification("Gagal", "Gagal menyalin nomor.", "error"); 
+                    window.showToast("Gagal menyalin nomor.", "error"); 
                 });
             };
 
@@ -882,6 +929,7 @@
                                         window.URL.revokeObjectURL(url);
                                         
                                         pesanEl.innerHTML = `<i class='fas fa-check-circle'></i> Berhasil diunduh! Silakan cek file di perangkat Anda.`;
+                                        window.showToast("File PDF berhasil diunduh!", "success");
                                     } else {
                                         pesanEl.style.color = "#ff4757";
                                         pesanEl.innerHTML = `<i class='fas fa-times-circle'></i> Gagal mengunduh file dari satelit.`;
@@ -1147,6 +1195,7 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
+                    // Hanya menggunakan format string untuk display
                     const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_ ]/g, '');
                     const displayTotal = formatRupiah(order.gross_amount || order.total_price || 0);
 
@@ -1225,6 +1274,7 @@
                 activePaymentOrderId = String(orderId);
                 document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                 
+                // Reset State Menunggu Data Dari Backend
                 document.getElementById('textInvoiceTotal').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 document.getElementById('popupQrisContainer').style.display = 'none';
                 document.getElementById('popupVaContainer').style.display = 'none';
@@ -1232,6 +1282,7 @@
                 document.getElementById('paymentTutorialModal').classList.add('active');
 
                 try {
+                    // Minta rincian tagihan 100% akurat langsung dari mesin Rust
                     const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
                         method: 'POST',
                         headers: {
@@ -1244,11 +1295,13 @@
                         })
                     });
 
+                    // Anti-Crash JSON Parser
                     let details;
                     const textRes = await res.text();
                     try { details = JSON.parse(textRes); } catch(err) { throw new Error("Sistem sibuk. Gagal memuat tagihan."); }
                     if (!res.ok) throw new Error(details.error || "Gagal memuat rincian pesanan");
 
+                    // UPDATE UI DROPDOWN RINCIAN TAGIHAN
                     document.getElementById('textInvoiceTotal').innerText = formatRupiah(details.gross_amount);
                     document.getElementById('breakdownBarang').innerText = formatRupiah(details.total_price);
                     
@@ -1264,6 +1317,7 @@
                     document.getElementById('breakdownPenanganan').innerText = formatRupiah(details.fee_penanganan);
                     document.getElementById('breakdownGateway').innerText = formatRupiah(details.fee_gateway);
 
+                    // MENYIAPKAN TAMPILAN QRIS / VIRTUAL ACCOUNT
                     let rawPayNum = null;
                     try { rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`); } catch (e) {}
                     
@@ -1279,6 +1333,7 @@
                         }
                     }
 
+                    // Deteksi Cerdas QRIS: Dari nama metode ATAU karena string sangat panjang (Payload QRIS)
                     const lowerMethod = String(details.payment_type).toLowerCase();
                     const forceQris = String(rawPayNum).length > 30;
                     const isQris = lowerMethod.includes('qris') || lowerMethod.includes('wallet') || lowerMethod.includes('shopee') || lowerMethod.includes('dana') || lowerMethod.includes('gopay') || lowerMethod.includes('linkaja');
@@ -1307,7 +1362,7 @@
             };
 
             // =========================================================================
-            // FITUR DOWNLOAD QRIS RESOLUSI TINGGI
+            // FITUR DOWNLOAD QRIS RESOLUSI TINGGI (TANPA PECAH)
             // =========================================================================
             window.downloadQRIS = function() {
                 if (!activePaymentOrderId) return;
@@ -1323,27 +1378,26 @@
                 }
                 
                 if (!rawPayNum) {
-                    window.showNotification("Gagal", "Data QRIS tidak ditemukan. Silakan muat ulang halaman.", "error");
+                    window.showToast("Data QRIS tidak ditemukan. Muat ulang halaman.", "error");
                     return;
                 }
 
-                // 1. Buat elemen rahasia di luar layar untuk merender QR Code High-Res
+                // Membuat elemen rahasia untuk mencetak QRIS Resolusi Tinggi (1024x1024)
                 const tempDiv = document.createElement("div");
                 tempDiv.style.position = "absolute";
                 tempDiv.style.left = "-9999px";
                 document.body.appendChild(tempDiv);
 
-                // 2. Generate QR Code ukuran 1024x1024 dengan Tingkat Koreksi Error "H" (Highest)
                 new QRCode(tempDiv, {
                     text: String(rawPayNum),
                     width: 1024,
                     height: 1024,
                     colorDark: "#000000",
                     colorLight: "#ffffff",
-                    correctLevel: QRCode.CorrectLevel.H 
+                    correctLevel: QRCode.CorrectLevel.H // Level Koreksi Error Tertinggi
                 });
 
-                // 3. Ekstraksi gambar setelah selesai di-render dan paksa download
+                // Tunggu proses render kanvas selesai
                 setTimeout(() => {
                     let imgData = "";
                     const canvas = tempDiv.querySelector("canvas");
@@ -1362,12 +1416,11 @@
                         document.body.appendChild(a);
                         a.click();
                         document.body.removeChild(a);
-                        window.showNotification("Berhasil", "QRIS resolusi tinggi berhasil disimpan ke galeri Anda.", "success");
+                        window.showToast("QRIS berhasil disimpan ke galeri!", "success");
                     } else {
-                        window.showNotification("Gagal", "Perangkat Anda tidak mendukung fitur unduh gambar otomatis.", "error");
+                        window.showToast("Browser Anda menolak unduh gambar.", "error");
                     }
                     
-                    // Bersihkan elemen rahasia
                     document.body.removeChild(tempDiv);
                 }, 300);
             };
@@ -1436,11 +1489,11 @@
                     }
 
                     renderOrders(currentStatusFilter);
-                    window.showNotification("Berhasil", "Metode pembayaran telah diganti. Silakan lakukan pembayaran.", "success");
+                    window.showToast("Metode pembayaran telah diganti.", "success");
                     
                     setTimeout(() => {
                         window.openPaymentGateway(activePaymentOrderId, newMethodId);
-                    }, 2000);
+                    }, 1000);
 
                 } catch(e) {
                     window.showNotification("Gagal", escapeHTML(e.message), "error");
