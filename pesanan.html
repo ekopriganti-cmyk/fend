@@ -15,7 +15,7 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- Library QRCode JS (Integrity Hash Dihapus Agar Tidak Diblokir Browser) -->
+    <!-- Library QRCode JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
 
     <style>
@@ -256,7 +256,7 @@
             .payment-grid { grid-template-columns: repeat(4, 60px); justify-content: flex-start; margin: 0; }
         }
 
-        /* Styling Promo Pill (Menyamakan dengan keranjang) */
+        /* Styling Promo Pill */
         .promo-pill { background: var(--bg-color); border: 2px dashed rgba(9, 132, 227, 0.4); padding: 12px 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: var(--neu-flat-sm); }
         .promo-pill-code { font-weight: 700; font-size: 13px; color: var(--accent-color); }
         .promo-pill-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
@@ -629,7 +629,7 @@
                 return "Rp " + parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
             }
 
-            // Fungsi Global Yang Aman dari Blockir Descriptor
+            // Fungsi Global Yang Aman
             window.showNotification = function(title, message, type, redirectUrl = null) {
                 const notifModal = document.getElementById('notificationModal');
                 const notifIcon = document.getElementById('notifIcon');
@@ -1202,7 +1202,6 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
-                    // SANITASI MUTLAK: Menghilangkan seluruh karakter aneh dari param onclick untuk cegah Syntax Error di HTML
                     const safeTotalStr = String(order.gross_amount || order.total_price || 0).replace(/[^0-9\.]/g, '');
                     const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_]/g, '');
                     const cleanOrderId = String(order.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
@@ -1309,7 +1308,17 @@
                 try {
                     const lowerMethod = String(paymentMethodStr).toLowerCase();
                     
-                    if (lowerMethod === 'qris' || lowerMethod.includes('wallet')) {
+                    // Filter Dinamis Deteksi QRIS: 
+                    // Termasuk e-wallet umum, atau string sangat panjang (Payload QRIS)
+                    const isQris = lowerMethod.includes('qris') || 
+                                   lowerMethod.includes('wallet') || 
+                                   lowerMethod.includes('shopee') || 
+                                   lowerMethod.includes('gopay') || 
+                                   lowerMethod.includes('dana') || 
+                                   lowerMethod.includes('linkaja') || 
+                                   String(rawPayNum).length > 30;
+                    
+                    if (isQris) {
                         document.getElementById('popupVaContainer').style.display = 'none';
                         document.getElementById('popupQrisContainer').style.display = 'flex';
                         document.getElementById('qrcodeBox').innerHTML = ""; 
@@ -1376,10 +1385,17 @@
                         })
                     });
 
-                    const data = await res.json();
+                    // Penanganan aman jika server me-return error text (bukan JSON)
+                    const textRes = await res.text();
+                    let data;
+                    try {
+                        data = JSON.parse(textRes);
+                    } catch(err) {
+                        throw new Error(textRes || "Server mengembalikan format yang tidak valid. Terjadi kesalahan internal.");
+                    }
 
                     if (!res.ok) {
-                        throw new Error(data.error || "Gagal mengubah metode pembayaran");
+                        throw new Error(data.error || data.message || "Gagal mengubah metode pembayaran");
                     }
 
                     try {
