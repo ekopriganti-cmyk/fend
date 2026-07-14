@@ -452,6 +452,12 @@
                     <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px;">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" style="height: 18px;" alt="QRIS" draggable="false">
                     </div>
+                    
+                    <!-- TOMBOL DOWNLOAD QRIS HIGH-RES -->
+                    <button onclick="window.downloadQRIS()" class="neu-btn" style="padding: 8px 15px; font-size: 11px; margin-bottom: 10px; background: var(--bg-color); color: var(--accent-color); border: 1px dashed var(--accent-color); width: auto;">
+                        <i class="fas fa-download"></i> Simpan QRIS
+                    </button>
+                    
                     <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; font-weight: 500;">Buka aplikasi e-Wallet atau m-Banking Anda, lalu scan QR Code di atas.</p>
                 </div>
 
@@ -466,7 +472,7 @@
                 </div>
             </div>
 
-            <!-- TAB RINCIAN TAGIHAN DINAMIS (NEW) -->
+            <!-- TAB RINCIAN TAGIHAN DINAMIS -->
             <div style="background: var(--bg-color); border-radius: 15px; padding: 15px; box-shadow: var(--neu-pressed-sm); margin-bottom: 20px; text-align: left;">
                 <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="const t=document.getElementById('rincianTagihan'); t.style.display=t.style.display==='none'?'flex':'none'; const i=this.querySelector('i'); i.classList.toggle('fa-chevron-up'); i.classList.toggle('fa-chevron-down');">
                     <span style="font-size: 12px; font-weight: 700; color: var(--text-main);"><i class="fas fa-receipt" style="color:var(--text-muted); margin-right:5px;"></i> Rincian Tagihan</span>
@@ -1141,7 +1147,6 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
-                    // Hanya menggunakan format string untuk display
                     const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_ ]/g, '');
                     const displayTotal = formatRupiah(order.gross_amount || order.total_price || 0);
 
@@ -1150,7 +1155,6 @@
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
-                        // Mengirim orderId dan method saja, detail harga akan ditarik aman dari backend
                         actionButtonHTML = `
                             <button class="btn-pay-now" 
                                 onclick="window.openPaymentGateway('${safeOrderId}', '${safeMethodStr}')">
@@ -1221,7 +1225,6 @@
                 activePaymentOrderId = String(orderId);
                 document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                 
-                // Reset State Menunggu Data Dari Backend
                 document.getElementById('textInvoiceTotal').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 document.getElementById('popupQrisContainer').style.display = 'none';
                 document.getElementById('popupVaContainer').style.display = 'none';
@@ -1229,7 +1232,6 @@
                 document.getElementById('paymentTutorialModal').classList.add('active');
 
                 try {
-                    // Minta rincian tagihan 100% akurat langsung dari mesin Rust
                     const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
                         method: 'POST',
                         headers: {
@@ -1242,13 +1244,11 @@
                         })
                     });
 
-                    // Anti-Crash JSON Parser
                     let details;
                     const textRes = await res.text();
                     try { details = JSON.parse(textRes); } catch(err) { throw new Error("Sistem sibuk. Gagal memuat tagihan."); }
                     if (!res.ok) throw new Error(details.error || "Gagal memuat rincian pesanan");
 
-                    // UPDATE UI DROPDOWN RINCIAN TAGIHAN
                     document.getElementById('textInvoiceTotal').innerText = formatRupiah(details.gross_amount);
                     document.getElementById('breakdownBarang').innerText = formatRupiah(details.total_price);
                     
@@ -1264,7 +1264,6 @@
                     document.getElementById('breakdownPenanganan').innerText = formatRupiah(details.fee_penanganan);
                     document.getElementById('breakdownGateway').innerText = formatRupiah(details.fee_gateway);
 
-                    // MENYIAPKAN TAMPILAN QRIS / VIRTUAL ACCOUNT
                     let rawPayNum = null;
                     try { rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`); } catch (e) {}
                     
@@ -1280,7 +1279,6 @@
                         }
                     }
 
-                    // Deteksi Cerdas QRIS: Dari nama metode ATAU karena string sangat panjang (Payload QRIS)
                     const lowerMethod = String(details.payment_type).toLowerCase();
                     const forceQris = String(rawPayNum).length > 30;
                     const isQris = lowerMethod.includes('qris') || lowerMethod.includes('wallet') || lowerMethod.includes('shopee') || lowerMethod.includes('dana') || lowerMethod.includes('gopay') || lowerMethod.includes('linkaja');
@@ -1306,6 +1304,72 @@
                     window.closePaymentTutorial();
                     window.showNotification("Kesalahan", escapeHTML(e.message), "error");
                 }
+            };
+
+            // =========================================================================
+            // FITUR DOWNLOAD QRIS RESOLUSI TINGGI
+            // =========================================================================
+            window.downloadQRIS = function() {
+                if (!activePaymentOrderId) return;
+                
+                let rawPayNum = null;
+                try { rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`); } catch (e) {}
+                
+                if (!rawPayNum) {
+                    const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
+                    if(orderData && orderData.payment_number) {
+                        rawPayNum = orderData.payment_number;
+                    }
+                }
+                
+                if (!rawPayNum) {
+                    window.showNotification("Gagal", "Data QRIS tidak ditemukan. Silakan muat ulang halaman.", "error");
+                    return;
+                }
+
+                // 1. Buat elemen rahasia di luar layar untuk merender QR Code High-Res
+                const tempDiv = document.createElement("div");
+                tempDiv.style.position = "absolute";
+                tempDiv.style.left = "-9999px";
+                document.body.appendChild(tempDiv);
+
+                // 2. Generate QR Code ukuran 1024x1024 dengan Tingkat Koreksi Error "H" (Highest)
+                new QRCode(tempDiv, {
+                    text: String(rawPayNum),
+                    width: 1024,
+                    height: 1024,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H 
+                });
+
+                // 3. Ekstraksi gambar setelah selesai di-render dan paksa download
+                setTimeout(() => {
+                    let imgData = "";
+                    const canvas = tempDiv.querySelector("canvas");
+                    const img = tempDiv.querySelector("img");
+                    
+                    if (canvas) {
+                        imgData = canvas.toDataURL("image/png");
+                    } else if (img && img.src) {
+                        imgData = img.src;
+                    }
+
+                    if (imgData) {
+                        const a = document.createElement("a");
+                        a.href = imgData;
+                        a.download = `QRIS_BAKOEL_INV-${activePaymentOrderId.split('-')[0].toUpperCase()}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.showNotification("Berhasil", "QRIS resolusi tinggi berhasil disimpan ke galeri Anda.", "success");
+                    } else {
+                        window.showNotification("Gagal", "Perangkat Anda tidak mendukung fitur unduh gambar otomatis.", "error");
+                    }
+                    
+                    // Bersihkan elemen rahasia
+                    document.body.removeChild(tempDiv);
+                }, 300);
             };
 
             window.closePaymentTutorial = function() {
@@ -1349,7 +1413,6 @@
                         })
                     });
 
-                    // Penanganan super aman untuk Mencegah Error "Missing Extension / not valid JSON"
                     let data;
                     const textRes = await res.text();
                     try {
