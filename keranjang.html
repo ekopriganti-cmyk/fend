@@ -212,6 +212,7 @@
                 <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span>
             </a>
             
+            <!-- Elemen ini akan otomatis digantikan oleh JS jika pengguna sudah login -->
             <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
                 <i class="fas fa-sign-in-alt"></i> <span>Login</span>
             </a>
@@ -277,9 +278,7 @@
         </div>
     </div>
 
-    <!-- ========================================== -->
-    <!-- MODAL CUSTOM POP-UP PEMBAYARAN PAKASIR     -->
-    <!-- ========================================== -->
+    <!-- MODAL CUSTOM POPUP PEMBAYARAN (Baru) -->
     <div class="modal-overlay" id="customPaymentPopupModal">
         <div class="modal-content" style="max-width: 350px; text-align: center; padding: 25px 20px;">
             <div class="modal-header" style="justify-content: center; margin-bottom: 10px;">
@@ -324,12 +323,10 @@
                 <div class="modal-title-box"><h2><i class="fas fa-map-marker-alt"></i> Titik Pengiriman</h2></div>
                 <button class="modal-close" onclick="window.closeAddressModal()"><i class="fas fa-times"></i></button>
             </div>
-            
             <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px; margin-bottom: 15px;">
                 <div style="margin-bottom: 20px;">
                     <span class="input-label">Geser Pin ke Lokasi Pasti</span>
                     <div id="mapPicker" style="height: 180px; border-radius: 15px; z-index: 1; box-shadow: var(--neu-pressed-sm); margin-bottom: 12px;"></div>
-                    
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div id="mapStatus" style="font-size: 10px; color: var(--text-muted); font-weight: 600; line-height: 1.3;">Geser pin merah ke<br>atas rumah Anda</div>
                         <button type="button" onclick="window.autoGetLocation()" class="neu-btn" style="padding: 8px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
@@ -337,13 +334,11 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="input-group"><span class="input-label">Nama Penerima</span><input type="text" id="modalShipName" class="neu-input" placeholder="Budi Santoso" maxlength="100" spellcheck="false"></div>
                 <div class="input-group"><span class="input-label">Nomor WhatsApp</span><input type="tel" id="modalShipPhone" class="neu-input" placeholder="08123456789" maxlength="20"></div>
                 <div class="input-group"><span class="input-label">Kode Pos (Otomatis/Manual)</span><input type="text" id="modalShipZip" class="neu-input" placeholder="29432" inputmode="numeric" pattern="[0-9]*" maxlength="10"></div>
                 <div class="input-group"><span class="input-label">Detail Alamat (Patokan)</span><textarea id="modalShipAddress" class="neu-input" rows="2" placeholder="Contoh: Pagar hitam depan masjid..." maxlength="500" spellcheck="false"></textarea></div>
             </div>
-            
             <button class="btn-checkout" onclick="window.saveAddressInfo()" style="flex-shrink: 0;">Simpan & Pilih Kurir</button>
         </div>
     </div>
@@ -590,6 +585,21 @@
             });
 
             async function updateNavUI() {
+                const loginBtn = document.getElementById('navLoginBtn');
+                const mobileAccountBtn = document.getElementById('mobileAccountBtn');
+
+                const savedName = escapeHTML(session.name || (session.user && session.user.name) || "User");
+                const tempNickname = savedName.split(' ')[0]; 
+                const tempAvatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(savedName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
+                
+                loginBtn.className = 'nav-profile-badge hide-on-mobile';
+                loginBtn.href = 'akun.html';
+                loginBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false"><span>${tempNickname}</span>`;
+
+                if (mobileAccountBtn) {
+                    mobileAccountBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${tempNickname}</span>`;
+                }
+
                 try {
                     const userRes = await fetch(`${BASE_URL}/api/user`, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
                     if (userRes.ok) {
@@ -599,6 +609,14 @@
                         if(globalAddress && globalPhone && globalZip) { document.getElementById('summaryAddressVal').innerText = "Tersimpan"; document.getElementById('summaryAddressVal').style.color = "#27ae60"; }
                         else if(globalAddress && globalPhone) { document.getElementById('summaryAddressVal').innerText = "Belum Ada Kodepos"; document.getElementById('summaryAddressVal').style.color = "var(--text-main)"; }
                         else { document.getElementById('summaryAddressVal').innerText = "Belum Diatur"; }
+
+                        // Perbarui UI Navigasi dengan data dari API
+                        const rawDisplayName = userData.nama_panggilan || (userData.nama_lengkap ? userData.nama_lengkap.split(' ')[0] : "User");
+                        const displayName = escapeHTML(rawDisplayName);
+                        const avatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
+                        
+                        loginBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false"><span>${displayName}</span>`;
+                        if (mobileAccountBtn) { mobileAccountBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${displayName}</span>`; }
                     }
                     syncBadges(session.access_token);
                 } catch (e) { }
@@ -796,7 +814,7 @@
                         const variantKey = `${companyRaw}_${typeRaw}`; const logoUrl = courierLogos[variantKey] || courierLogos[companyRaw] || 'https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir';
                         const durasi = c.duration ? `${escapeHTML(String(c.duration).replace(/days|day/gi, '').trim())} Hari` : '-';
                         
-                        container.innerHTML += `<div class="promo-pill" style="cursor:pointer; display: flex; align-items: center;" onclick="window.selectCourier('${escapeHTML(companyRaw)}', '${escapeHTML(typeRaw)}', ${price}, '${escapeHTML(cName)}')"><div class="promo-pill-info" style="display: flex; align-items: center; gap: 12px; flex: 1;"><div style="width: 50px; height: 25px; display: flex; justify-content: center; align-items: center; background: #fff; padding: 2px 5px; border-radius: 6px; box-shadow: var(--neu-pressed-sm);"><img src="${logoUrl}" alt="Kurir" style="max-width: 100%; max-height: 100%; object-fit: contain;" draggable="false"></div><div><span class="promo-pill-code" style="color: var(--accent-color); font-size: 13px;">${escapeHTML(cName)}</span><div class="promo-pill-desc">Estimasi: ${durasi}</div></div></div><div style="font-weight:700; font-size: 13px;">${formatRupiah(price)}</div></div>`;
+                        container.innerHTML += `<div class="promo-pill" style="cursor:pointer; display: flex; align-items: center;" onclick="window.selectCourier('${escapeHTML(companyRaw)}', '${escapeHTML(typeRaw)}', ${price}, '${escapeHTML(cName)}')"><div class="promo-pill-info" style="display: flex; align-items: center; gap: 12px; flex: 1;"><div style="width: 50px; height: 25px; display: flex; justify-content: center; align-items: center; background: #fff; padding: 2px 5px; border-radius: 6px; box-shadow: var(--neu-pressed-sm);"><img src="${logoUrl}" alt="Kurir" style="max-width: 100%; max-height: 100%; object-fit: contain;" draggable="false" onerror="this.src='https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir'"></div><div><span class="promo-pill-code" style="color: var(--accent-color); font-size: 13px;">${escapeHTML(cName)}</span><div class="promo-pill-desc">Estimasi: ${durasi}</div></div></div><div style="font-weight:700; font-size: 13px;">${formatRupiah(price)}</div></div>`;
                     });
                 } catch (error) { container.innerHTML = `<div style="text-align:center; font-size:12px; color:#ff4757; padding: 20px;"><b>Gagal:</b> Cek kode pos.</div>`; }
             }
@@ -867,7 +885,7 @@
             }
 
             // =========================================================================
-            // REPLIKA MATEMATIKA SERVER (Sesuai Biaya Terbaru Pakasir)
+            // REPLIKA MATEMATIKA SERVER (Sesuai Biaya Terbaru Pakkasir)
             // =========================================================================
             function applyPromoMath() {
                 let disc = 0; activeVouchers.forEach(v => disc += v.discount);
