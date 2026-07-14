@@ -15,7 +15,6 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- Library QRCode JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
 
     <style>
@@ -122,27 +121,8 @@
         .btn-shop-now { display: inline-flex; align-items: center; justify-content: center; gap: 10px; background: var(--bg-color); color: var(--accent-color); padding: 12px 30px; border-radius: 50px; text-decoration: none; font-size: 14px; font-weight: 700; box-shadow: var(--neu-flat); transition: all 0.3s; }
         .btn-shop-now:active { box-shadow: var(--neu-pressed); }
 
-        /* ============================================================== */
-        /* KOTAK ARSIP COLD STORAGE MENGAMBANG (STICKY BOTTOM)            */
-        /* ============================================================== */
-        .archive-box {
-            position: sticky;
-            bottom: 20px; 
-            z-index: 90;
-            margin-top: 30px;
-            margin-bottom: 10px;
-            padding: 20px;
-            border-radius: 20px;
-            background: var(--bg-color);
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.05), var(--neu-flat);
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            border: 1px solid rgba(128,128,128,0.1);
-        }
-        [data-theme="dark"] .archive-box {
-            box-shadow: 0 -10px 25px rgba(0,0,0,0.4), var(--neu-flat);
-        }
+        .archive-box { position: sticky; bottom: 20px; z-index: 90; margin-top: 30px; margin-bottom: 10px; padding: 20px; border-radius: 20px; background: var(--bg-color); box-shadow: 0 -10px 25px rgba(0,0,0,0.05), var(--neu-flat); display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(128,128,128,0.1); }
+        [data-theme="dark"] .archive-box { box-shadow: 0 -10px 25px rgba(0,0,0,0.4), var(--neu-flat); }
 
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 4000; opacity: 0; transition: opacity 0.3s ease; }
         .modal-overlay.active { display: flex; opacity: 1; }
@@ -224,26 +204,11 @@
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); background: transparent; 
             }
             
-            .bottom-nav-item i { 
-                font-size: 20px; margin-bottom: 4px; 
-                transition: transform 0.2s ease, color 0.2s ease; 
-            }
+            .bottom-nav-item i { font-size: 20px; margin-bottom: 4px; transition: transform 0.2s ease, color 0.2s ease; }
+            .bottom-nav-item.active { color: var(--accent-color); background: var(--bg-color); box-shadow: var(--neu-pressed-sm); }
+            .bottom-nav-item.active i { transform: scale(1.15); }
             
-            .bottom-nav-item.active { 
-                color: var(--accent-color); 
-                background: var(--bg-color); 
-                box-shadow: var(--neu-pressed-sm); 
-            }
-            
-            .bottom-nav-item.active i { 
-                transform: scale(1.15); 
-            }
-            
-            .badge-container {
-                position: relative;
-                display: inline-flex;
-            }
-            
+            .badge-container { position: relative; display: inline-flex; }
             .bottom-nav-item .badge-count { 
                 position: absolute; top: -5px; right: -12px; background: #ff4757; color: white; 
                 font-size: 9px; font-weight: bold; padding: 2px 5px; border-radius: 10px; 
@@ -270,30 +235,14 @@
 
     <div class="top-nav">
         <a href="index.html" class="logo"><i class="fas fa-box-open"></i>BAKOEL</a>
-        
         <div class="controls">
             <div class="theme-switch" id="themeToggle" title="Toggle Dark Mode">
                 <div class="switch-handle"><i class="fas fa-sun" id="switchIcon"></i></div>
             </div>
-            
-            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo">
-                <i class="fas fa-tags"></i> <span>Promo</span>
-                <span class="badge-count" id="promoBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="pesanan.html" class="nav-link hide-on-mobile active" title="Pesanan">
-                <i class="fas fa-box"></i> <span>Pesanan</span>
-                <span class="badge-count" id="orderBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" id="desktopCartIconTarget" title="Keranjang">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px; width: 18px; height: 18px; padding: 0;">0</span>
-            </a>
-            
-            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
-                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-            </a>
+            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo"><i class="fas fa-tags"></i> <span>Promo</span><span class="badge-count" id="promoBadge" style="display: none;">0</span></a>
+            <a href="pesanan.html" class="nav-link hide-on-mobile active" title="Pesanan"><i class="fas fa-box"></i> <span>Pesanan</span><span class="badge-count" id="orderBadge" style="display: none;">0</span></a>
+            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" id="desktopCartIconTarget" title="Keranjang"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px; width: 18px; height: 18px; padding: 0;">0</span></a>
+            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a>
         </div>
     </div>
 
@@ -378,37 +327,11 @@
     </footer>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="bottom-nav-item">
-            <i class="fas fa-home"></i><span>Beranda</span>
-        </a>
-        
-        <a href="promo.html" class="bottom-nav-item">
-            <div class="badge-container">
-                <i class="fas fa-tags"></i>
-                <span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span>
-            </div>
-            <span>Promo</span>
-        </a>
-        
-        <a href="keranjang.html" class="bottom-nav-item">
-            <div class="badge-container">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="badge-count" id="mobileCartBadge" style="display: none;">0</span>
-            </div>
-            <span>Keranjang</span>
-        </a>
-        
-        <a href="pesanan.html" class="bottom-nav-item active">
-            <div class="badge-container">
-                <i class="fas fa-box"></i>
-                <span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span>
-            </div>
-            <span>Pesanan</span>
-        </a>
-        
-        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn">
-            <i class="fas fa-user"></i><span>Akun</span>
-        </a>
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
+        <a href="promo.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span></a>
+        <a href="keranjang.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span></a>
+        <a href="pesanan.html" class="bottom-nav-item active"><div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span></a>
+        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
     </nav>
 
     <!-- Modal Notifikasi -->
@@ -428,8 +351,7 @@
                 <h3><i class="fas fa-map-marked-alt"></i> Lacak Pengiriman</h3>
                 <button class="modal-close-btn" onclick="document.getElementById('trackingModal').classList.remove('active')"><i class="fas fa-times"></i></button>
             </div>
-            <div id="trackingContent" class="tutorial-body" style="padding-top: 10px;">
-                </div>
+            <div id="trackingContent" class="tutorial-body" style="padding-top: 10px;"></div>
         </div>
     </div>
 
@@ -537,10 +459,26 @@
                 <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
-                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px; word-break: break-all;">-</span>
-                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
+                        <span id="popupVaNumber" style="font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 1px; word-break: break-all;">-</span>
+                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fas fa-copy"></i></button>
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Pastikan nominal transfer sesuai agar otomatis terverifikasi oleh sistem.</p>
+                </div>
+            </div>
+
+            <!-- TAB RINCIAN TAGIHAN DINAMIS (NEW) -->
+            <div style="background: var(--bg-color); border-radius: 15px; padding: 15px; box-shadow: var(--neu-pressed-sm); margin-bottom: 20px; text-align: left;">
+                <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" onclick="const t=document.getElementById('rincianTagihan'); t.style.display=t.style.display==='none'?'flex':'none'; const i=this.querySelector('i'); i.classList.toggle('fa-chevron-up'); i.classList.toggle('fa-chevron-down');">
+                    <span style="font-size: 12px; font-weight: 700; color: var(--text-main);"><i class="fas fa-receipt" style="color:var(--text-muted); margin-right:5px;"></i> Rincian Tagihan</span>
+                    <i class="fas fa-chevron-down" style="color: var(--accent-color); transition: transform 0.3s;"></i>
+                </div>
+                <div id="rincianTagihan" style="display: none; flex-direction: column; gap: 8px; margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(128,128,128,0.2);">
+                    <div class="inv-row"><span>Total Harga Barang</span><span id="breakdownBarang">Rp 0</span></div>
+                    <div class="inv-row" id="rowDiskon" style="display:none; color:#27ae60;"><span>Diskon Promo</span><span id="breakdownDiskon">- Rp 0</span></div>
+                    <div class="inv-row"><span>Ongkos Kirim</span><span id="breakdownOngkir">Rp 0</span></div>
+                    <div class="inv-row"><span>Biaya Layanan</span><span id="breakdownLayanan">Rp 1.000</span></div>
+                    <div class="inv-row"><span>Biaya Penanganan</span><span id="breakdownPenanganan">Rp 1.000</span></div>
+                    <div class="inv-row"><span>Biaya Transaksi</span><span id="breakdownGateway" style="color:var(--accent-color);">Rp 0</span></div>
                 </div>
             </div>
             
@@ -629,7 +567,6 @@
                 return "Rp " + parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
             }
 
-            // Fungsi Global Yang Aman
             window.showNotification = function(title, message, type, redirectUrl = null) {
                 const notifModal = document.getElementById('notificationModal');
                 const notifIcon = document.getElementById('notifIcon');
@@ -901,7 +838,9 @@
                         body: JSON.stringify({ bulan_tahun: inputBulan })
                     });
 
-                    const result = await response.json();
+                    let result;
+                    const textRes = await response.text();
+                    try { result = JSON.parse(textRes); } catch(err) { throw new Error(textRes); }
 
                     if (response.ok) {
                         if (result.download_url) {
@@ -1202,19 +1141,19 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
-                    const safeTotalStr = String(order.gross_amount || order.total_price || 0).replace(/[^0-9\.]/g, '');
-                    const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_]/g, '');
-                    const cleanOrderId = String(order.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
-                    const displayTotal = formatRupiah(safeTotalStr);
+                    // Hanya menggunakan format string untuk display
+                    const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_ ]/g, '');
+                    const displayTotal = formatRupiah(order.gross_amount || order.total_price || 0);
 
                     let actionButtonHTML = '';
                     const lowerStatus = rawStatus.toLowerCase();
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
+                        // Mengirim orderId dan method saja, detail harga akan ditarik aman dari backend
                         actionButtonHTML = `
                             <button class="btn-pay-now" 
-                                onclick="window.openPaymentGateway('${cleanOrderId}', '${safeTotalStr}', '${safeMethodStr}')">
+                                onclick="window.openPaymentGateway('${safeOrderId}', '${safeMethodStr}')">
                                 <i class="fas fa-wallet"></i> Bayar Sekarang
                             </button>`;
                             
@@ -1229,7 +1168,7 @@
                             actionButtonHTML = `
                             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                                 <div style="font-size: 11px; font-weight: 700; color: var(--accent-color); padding: 4px 12px; border-radius: 50px; background: rgba(9, 132, 227, 0.1); border: 1px dashed rgba(9, 132, 227, 0.3);">Resi: ${safeAwb}</div>
-                                <button class="btn-track" onclick="window.trackOrderRealtime('${cleanOrderId}')">
+                                <button class="btn-track" onclick="window.trackOrderRealtime('${safeOrderId}')">
                                     <i class="fas fa-map-marked-alt"></i> Lacak Posisi
                                 </button>
                             </div>`;
@@ -1276,49 +1215,77 @@
             }
 
             // =========================================================================
-            // MENAMPILKAN POP-UP PEMBAYARAN KETIKA "BAYAR SEKARANG" DIKLIK
+            // POP-UP PEMBAYARAN & TARIK DATA AKURAT DARI BACKEND
             // =========================================================================
-            window.openPaymentGateway = async function(orderId, totalPrice, paymentMethodStr) {
+            window.openPaymentGateway = async function(orderId, paymentMethodStr) {
                 activePaymentOrderId = String(orderId);
-                
                 document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
-                document.getElementById('textInvoiceTotal').innerText = formatRupiah(totalPrice);
-
-                let rawPayNum = null;
-                try {
-                    rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`);
-                } catch (e) {
-                    console.warn("Storage restricted");
-                }
                 
-                if (!rawPayNum) {
-                    const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
-                    if(orderData && orderData.payment_number) {
-                        rawPayNum = orderData.payment_number;
-                    } else {
-                        window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori.", "error");
-                        return;
-                    }
-                }
-
+                // Reset State Menunggu Data Dari Backend
+                document.getElementById('textInvoiceTotal').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 document.getElementById('popupQrisContainer').style.display = 'none';
                 document.getElementById('popupVaContainer').style.display = 'none';
+                document.getElementById('rincianTagihan').style.display = 'none';
                 document.getElementById('paymentTutorialModal').classList.add('active');
 
                 try {
-                    const lowerMethod = String(paymentMethodStr).toLowerCase();
+                    // Minta rincian tagihan 100% akurat langsung dari mesin Rust
+                    const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({
+                            order_id: activePaymentOrderId,
+                            new_payment_method: "get_details"
+                        })
+                    });
+
+                    // Anti-Crash JSON Parser
+                    let details;
+                    const textRes = await res.text();
+                    try { details = JSON.parse(textRes); } catch(err) { throw new Error("Sistem sibuk. Gagal memuat tagihan."); }
+                    if (!res.ok) throw new Error(details.error || "Gagal memuat rincian pesanan");
+
+                    // UPDATE UI DROPDOWN RINCIAN TAGIHAN
+                    document.getElementById('textInvoiceTotal').innerText = formatRupiah(details.gross_amount);
+                    document.getElementById('breakdownBarang').innerText = formatRupiah(details.total_price);
                     
-                    // Filter Dinamis Deteksi QRIS: 
-                    // Termasuk e-wallet umum, atau string sangat panjang (Payload QRIS)
-                    const isQris = lowerMethod.includes('qris') || 
-                                   lowerMethod.includes('wallet') || 
-                                   lowerMethod.includes('shopee') || 
-                                   lowerMethod.includes('gopay') || 
-                                   lowerMethod.includes('dana') || 
-                                   lowerMethod.includes('linkaja') || 
-                                   String(rawPayNum).length > 30;
+                    if (details.discount_amount > 0) {
+                        document.getElementById('rowDiskon').style.display = 'flex';
+                        document.getElementById('breakdownDiskon').innerText = `- ${formatRupiah(details.discount_amount)}`;
+                    } else {
+                        document.getElementById('rowDiskon').style.display = 'none';
+                    }
                     
-                    if (isQris) {
+                    document.getElementById('breakdownOngkir').innerText = formatRupiah(details.shipping_cost);
+                    document.getElementById('breakdownLayanan').innerText = formatRupiah(details.fee_layanan);
+                    document.getElementById('breakdownPenanganan').innerText = formatRupiah(details.fee_penanganan);
+                    document.getElementById('breakdownGateway').innerText = formatRupiah(details.fee_gateway);
+
+                    // MENYIAPKAN TAMPILAN QRIS / VIRTUAL ACCOUNT
+                    let rawPayNum = null;
+                    try { rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`); } catch (e) {}
+                    
+                    if (!rawPayNum) {
+                        const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
+                        if(orderData && orderData.payment_number) {
+                            rawPayNum = orderData.payment_number;
+                        } else {
+                            window.closePaymentTutorial();
+                            window.showNotification("Informasi", "Silakan Pilih Ulang Metode Pembayaran Anda", "warning");
+                            window.openPaymentSelectionModal();
+                            return;
+                        }
+                    }
+
+                    // Deteksi Cerdas QRIS: Dari nama metode ATAU karena string sangat panjang (Payload QRIS)
+                    const lowerMethod = String(details.payment_type).toLowerCase();
+                    const forceQris = String(rawPayNum).length > 30;
+                    const isQris = lowerMethod.includes('qris') || lowerMethod.includes('wallet') || lowerMethod.includes('shopee') || lowerMethod.includes('dana') || lowerMethod.includes('gopay') || lowerMethod.includes('linkaja');
+                    
+                    if (isQris || forceQris) {
                         document.getElementById('popupVaContainer').style.display = 'none';
                         document.getElementById('popupQrisContainer').style.display = 'flex';
                         document.getElementById('qrcodeBox').innerHTML = ""; 
@@ -1336,7 +1303,8 @@
                         document.getElementById('popupVaNumber').innerText = escapeHTML(String(rawPayNum));
                     }
                 } catch (e) {
-                    window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
+                    window.closePaymentTutorial();
+                    window.showNotification("Kesalahan", escapeHTML(e.message), "error");
                 }
             };
 
@@ -1344,10 +1312,6 @@
                 document.getElementById('paymentTutorialModal').classList.remove('active');
             };
 
-            // =========================================================================
-            // ALUR GANTI METODE PEMBAYARAN HEADLESS (MENEMBAK RUST BACKEND)
-            // =========================================================================
-            
             window.openPaymentSelectionModal = function() {
                 if(!activePaymentOrderId) return;
                 document.getElementById('paymentTutorialModal').classList.remove('active');
@@ -1385,22 +1349,20 @@
                         })
                     });
 
-                    // Penanganan aman jika server me-return error text (bukan JSON)
-                    const textRes = await res.text();
+                    // Penanganan super aman untuk Mencegah Error "Missing Extension / not valid JSON"
                     let data;
+                    const textRes = await res.text();
                     try {
                         data = JSON.parse(textRes);
                     } catch(err) {
-                        throw new Error(textRes || "Server mengembalikan format yang tidak valid. Terjadi kesalahan internal.");
+                        throw new Error("Sistem pembayaran sibuk. Harap refresh halaman.");
                     }
 
                     if (!res.ok) {
                         throw new Error(data.error || data.message || "Gagal mengubah metode pembayaran");
                     }
 
-                    try {
-                        localStorage.setItem(`paynum_${activePaymentOrderId}`, data.payment_number);
-                    } catch (e) {}
+                    try { localStorage.setItem(`paynum_${activePaymentOrderId}`, data.payment_number); } catch (e) {}
                     
                     const orderIndex = allOrders.findIndex(o => String(o.id) === activePaymentOrderId);
                     if(orderIndex !== -1) {
@@ -1414,7 +1376,7 @@
                     window.showNotification("Berhasil", "Metode pembayaran telah diganti. Silakan lakukan pembayaran.", "success");
                     
                     setTimeout(() => {
-                        window.openPaymentGateway(activePaymentOrderId, data.new_total, newMethodId);
+                        window.openPaymentGateway(activePaymentOrderId, newMethodId);
                     }, 2000);
 
                 } catch(e) {
