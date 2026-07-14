@@ -11,11 +11,14 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     
-    <!-- SECURITY PATCH: Menghapus app.sandbox.midtrans.com untuk mencegah Client-Side Supply Chain Attack (#6) dan CSP Bypass (#72) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
+    <!-- SECURITY PATCH: Menambahkan cdnjs.cloudflare.com untuk library QRCode lokal. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     
+    <!-- Library QRCode JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecJQxFIb53auzZAHuH2n4WhAfrwD1xS57ZvHn1R-k4D1XhO1y2q/U0g/U..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -163,15 +166,6 @@
         .invoice-summary-box { background: var(--bg-color); box-shadow: var(--neu-pressed-sm); border-radius: 15px; padding: 15px; margin-bottom: 20px; display: flex; flex-direction: column; gap: 8px; }
         .inv-row { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--text-muted); font-weight: 600; }
         
-        .tutorial-step { margin-bottom: 15px; background: var(--bg-color); padding: 15px; border-radius: 15px; box-shadow: var(--neu-flat-sm); display: flex; gap: 12px; align-items: flex-start; }
-        .tutorial-step-icon { width: 32px; height: 32px; border-radius: 50%; background: var(--bg-color); box-shadow: var(--neu-pressed-sm); display: flex; justify-content: center; align-items: center; color: var(--accent-color); font-size: 13px; flex-shrink: 0; }
-        .tutorial-step-content { flex: 1; }
-        .tutorial-step-content strong { color: var(--text-main); display: block; margin-bottom: 5px; font-size: 12px; font-weight: 700; }
-        .tutorial-step-content p { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 0; }
-        
-        .tutorial-footer-note { font-size: 10px; color: var(--text-muted); text-align: left; margin-top: 15px; font-weight: 500; display: flex; align-items: flex-start; gap: 8px; padding: 12px; background: rgba(9, 132, 227, 0.05); border-radius: 12px; border: 1px dashed rgba(9, 132, 227, 0.3); }
-        .tutorial-footer-note i { color: var(--accent-color); font-size: 14px; margin-top: 2px; }
-
         .neu-btn { padding: 12px; border-radius: 50px; border: none; background: var(--bg-color); color: var(--text-main); font-size: 13px; font-weight: 700; box-shadow: var(--neu-flat-sm); cursor: pointer; transition: all 0.3s; width: 100%; display: flex; justify-content: center; align-items: center; gap: 8px;}
         .neu-btn:active { box-shadow: var(--neu-pressed-sm); color: var(--accent-color); }
 
@@ -290,6 +284,7 @@
                 <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px; width: 18px; height: 18px; padding: 0;">0</span>
             </a>
             
+            <!-- Elemen dinamis Login/Profil (Sudah diperbaiki) -->
             <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
                 <i class="fas fa-sign-in-alt"></i> <span>Login</span>
             </a>
@@ -410,6 +405,7 @@
         </a>
     </nav>
 
+    <!-- Modal Notifikasi -->
     <div class="modal-overlay" id="notificationModal">
         <div class="modal-content" style="max-width: 320px; text-align: center; align-items: center; padding: 30px 20px;">
             <div id="notifIcon" style="font-size: 45px; margin-bottom: 15px; display: flex; justify-content: center; width: 100%;"></div>
@@ -419,6 +415,7 @@
         </div>
     </div>
 
+    <!-- Modal Tracking -->
     <div class="modal-overlay" id="trackingModal">
         <div class="modal-content" style="max-width: 400px; padding: 25px;">
             <div class="modal-header-inline">
@@ -430,56 +427,43 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL CUSTOM POP-UP PEMBAYARAN PAKASIR     -->
+    <!-- ========================================== -->
     <div class="modal-overlay" id="paymentTutorialModal">
-        <div class="modal-content">
-            <div class="modal-header-inline">
-                <h3><i class="fas fa-wallet"></i> Instruksi Pembayaran</h3>
-                <button class="modal-close-btn" onclick="window.closePaymentTutorial()"><i class="fas fa-times"></i></button>
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 25px 20px;">
+            <div class="modal-header" style="justify-content: center; margin-bottom: 10px;">
+                <div class="modal-title-box"><h2 style="color: var(--text-main); font-size: 20px;"><i class="fas fa-wallet" style="color: var(--accent-color);"></i> Selesaikan Pembayaran</h2></div>
             </div>
-            <div class="tutorial-body">
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600;">Tagihan Invoice: <span id="textInvoiceId" style="color: var(--accent-color);">INV-</span></p>
+            
+            <div style="background: var(--bg-color); border-radius: 15px; padding: 20px; box-shadow: var(--neu-pressed-sm); margin-bottom: 20px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Tagihan</div>
+                <div style="font-size: 26px; font-weight: 700; color: var(--accent-color); margin-bottom: 20px; letter-spacing: -0.5px;" id="textInvoiceTotal">Rp 0</div>
                 
-                <div class="invoice-summary-box">
-                    <div class="inv-row">
-                        <span>ID Invoice:</span>
-                        <span id="textInvoiceId" style="color: var(--text-main);"></span>
+                <!-- QRIS Container -->
+                <div id="popupQrisContainer" style="display: none; flex-direction: column; align-items: center;">
+                    <div style="background: white; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 15px; box-shadow: var(--neu-flat-sm);">
+                        <div id="qrcodeBox" style="width: 180px; height: 180px;"></div>
                     </div>
-                    <div class="inv-row">
-                        <span>Total Tagihan:</span>
-                        <span id="textInvoiceTotal" style="color: #ff4757; font-size: 14px;"></span>
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" style="height: 18px;" alt="QRIS" draggable="false">
                     </div>
-                </div>
-                
-                <div class="tutorial-step">
-                    <div class="tutorial-step-icon"><i class="fas fa-qrcode"></i></div>
-                    <div class="tutorial-step-content">
-                        <strong>PILIHAN 1: QRIS / E-Wallet</strong>
-                        <p>Scan kode QRIS yang muncul di layar. Buka GoPay, OVO, Dana, LinkAja, atau Mobile Banking Anda, pilih scan, lalu konfirmasi pembayaran.</p>
-                    </div>
-                </div>
-                
-                <div class="tutorial-step">
-                    <div class="tutorial-step-icon"><i class="fas fa-university"></i></div>
-                    <div class="tutorial-step-content">
-                        <strong>PILIHAN 2: Virtual Account</strong>
-                        <p>Salin nomor VA dari layar pembayaran. Masuk ke M-Banking Anda -> Transfer -> Virtual Account, masukkan nomor, dan pastikan nominal sesuai.</p>
-                    </div>
-                </div>
-                
-                <div class="tutorial-step">
-                    <div class="tutorial-step-icon"><i class="fas fa-store"></i></div>
-                    <div class="tutorial-step-content">
-                        <strong>PILIHAN 3: Alfamart / Indomaret</strong>
-                        <p>Tunjukkan kode pembayaran kepada kasir. Informasikan pembayaran untuk merchant yang tertera, bayar tunai, dan simpan struk Anda.</p>
-                    </div>
-                </div>
-                
-                <div class="tutorial-footer-note">
-                    <i class="fas fa-info-circle"></i> 
-                    <div>Status pesanan Anda akan otomatis berubah menjadi 'Diproses' dalam waktu 1-3 menit setelah dana berhasil diverifikasi oleh sistem.</div>
+                    <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; font-weight: 500;">Buka aplikasi e-Wallet atau m-Banking Anda, lalu scan QR Code di atas.</p>
                 </div>
 
+                <!-- VA Container -->
+                <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
+                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px;">-</span>
+                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Salin dan transfer tepat sesuai nominal agar otomatis terverifikasi oleh sistem.</p>
+                </div>
             </div>
-            <button class="neu-btn" onclick="window.relaunchSnapWidget()" style="margin-top: 15px; color: var(--accent-color); border: 2px solid transparent;"><i class="fas fa-external-link-alt"></i> Coba Buka Ulang Panel Bayar</button>
+            
+            <button class="neu-btn" onclick="window.closePaymentTutorial()" style="background: var(--bg-color); color: var(--text-muted); border: none;">Tutup</button>
         </div>
     </div>
 
@@ -528,7 +512,7 @@
 
         (function() {
             const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rusty-c22o.onrender.com';
+            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
 
             const sessionData = localStorage.getItem('user_session');
             if (!sessionData) { window.location.replace('login.html'); return; }
@@ -602,6 +586,19 @@
                         if(redirectUrl) window.location.href = escapeHTML(redirectUrl);
                     };
                     notifModal.classList.add('active');
+                },
+                writable: false,
+                configurable: false
+            });
+            
+            Object.defineProperty(window, 'copyToClipboard', {
+                value: function(elementId) {
+                    const text = document.getElementById(elementId).innerText;
+                    navigator.clipboard.writeText(text).then(() => {
+                        showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success");
+                    }).catch(err => {
+                        showNotification("Gagal", "Gagal menyalin nomor.", "error");
+                    });
                 },
                 writable: false,
                 configurable: false
@@ -748,6 +745,7 @@
                         o.id = String(o.id || o.order_id || '');
                         o.total_price = Number(o.total_price) || 0;
                         o.status = String(o.status || 'Pending');
+                        o.payment_type = String(o.payment_type || '');
                         if(o.items && Array.isArray(o.items)) {
                             o.items.forEach(i => {
                                 i.quantity = Number(i.quantity) || 1;
@@ -796,7 +794,7 @@
             // =========================================================================
             // FUNGSI BARU: MINTA, LOADING, DAN UNDUH ARSIP PDF (SMART POLLING)
             // =========================================================================
-            let arsipCheckInterval = null;
+            let arsipCheckInterval = null; // Variabel untuk menyimpan timer
 
             Object.defineProperty(window, 'mintaArsipPDF', {
                 value: async function(event, isAutoCheck = false) {
@@ -816,6 +814,7 @@
 
                     if (!session || !session.access_token) return;
 
+                    // Hentikan timer sebelumnya jika ada
                     if (arsipCheckInterval && !isAutoCheck) {
                         clearInterval(arsipCheckInterval);
                         arsipCheckInterval = null;
@@ -832,7 +831,7 @@
                     }
 
                     try {
-                        const BASE_REQ_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rusty-c22o.onrender.com';
+                        const BASE_REQ_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
 
                         const response = await fetch(`${BASE_REQ_URL}/api/archive/request`, {
                             method: "POST",
@@ -847,14 +846,14 @@
 
                         if (response.ok) {
                             if (result.download_url) {
-                                // SKENARIO 1: PDF SUDAH JADI
+                                // SKENARIO 1: PDF SUDAH JADI!
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 
                                 if(btnEl) {
                                     btnEl.disabled = false;
                                     btnEl.style.opacity = '1';
                                     btnEl.innerHTML = "<i class='fas fa-file-pdf'></i> Unduh PDF Sekarang";
-                                    btnEl.style.background = "#27ae60"; 
+                                    btnEl.style.background = "#27ae60"; // Berubah hijau
                                     btnEl.style.color = "#ffffff";
                                 }
 
@@ -862,6 +861,7 @@
                                     pesanEl.style.color = "#27ae60";
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip siap! Mengunduh file Anda...";
                                     
+                                    // Proses penyedotan file secara rahasia (Blob)
                                     try {
                                         const dlRes = await fetch(`${BASE_REQ_URL}${result.download_url}`, {
                                             method: "GET",
@@ -893,7 +893,7 @@
                                     pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip untuk bulan ini sudah siap diunduh.";
                                 }
                             } else {
-                                // SKENARIO 2: BARU MASUK ANTREAN
+                                // SKENARIO 2: BARU MASUK ANTREAN PERTAMA KALI
                                 if(btnEl) {
                                     btnEl.disabled = true;
                                     btnEl.style.opacity = '0.7';
@@ -904,12 +904,13 @@
                                 pesanEl.style.color = "var(--accent-color)";
                                 pesanEl.innerHTML = `<i class='fas fa-tools'></i> ${escapeHTML(result.message)} <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(File akan otomatis terunduh saat selesai. Anda boleh pindah halaman dan kembali lagi nanti).</span>`;
                                 
+                                // Mulai timer mengecek setiap 5 detik
                                 if (!arsipCheckInterval) {
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             }
                         } else {
-                            // SKENARIO 3: ERROR ATAU SEDANG DIRAKIT
+                            // SKENARIO 3: ERROR ATAU SEDANG DALAM PROSES RAKIT
                             if (result.error && result.error.includes("sedang dirakit")) {
                                 if(btnEl) {
                                     btnEl.disabled = true;
@@ -925,6 +926,7 @@
                                     arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
                                 }
                             } else {
+                                // Jika Error beneran
                                 if (arsipCheckInterval) clearInterval(arsipCheckInterval);
                                 if(btnEl) { 
                                     btnEl.disabled = false; 
@@ -970,15 +972,20 @@
                 configurable: false
             });
 
+            // =========================================================================
+            // FILTER ORDER SEKALIGUS MENGONTROL KOTAK ARSIP
+            // =========================================================================
             Object.defineProperty(window, 'filterOrders', {
                 value: function(status) {
                     currentStatusFilter = String(status);
                     
+                    // Ganti gaya tab yang aktif
                     document.querySelectorAll('.tab-btn').forEach(btn => {
                         if (btn.getAttribute('data-status') === status) btn.classList.add('active');
                         else btn.classList.remove('active');
                     });
                     
+                    // Logika Menyembunyikan/Memunculkan Kotak Arsip
                     const archiveBox = document.getElementById('archiveBoxContainer');
                     if (archiveBox) {
                         if (status === 'Selesai' || status === 'Dibatalkan') {
@@ -1162,17 +1169,20 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
-                    const displayTotal = formatRupiah(order.total_price || 0);
+                    const displayTotal = formatRupiah(order.gross_amount || order.total_price || 0);
 
                     let actionButtonHTML = '';
                     const lowerStatus = rawStatus.toLowerCase();
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
-                        const tokenPlaceholder = escapeHTML(order.midtrans_token || '');
+                        // Mengirim orderId dan gross_amount
+                        const safeTotal = String(order.gross_amount || order.total_price || 0);
+                        const safeMethod = String(order.payment_type || '');
+                        
                         actionButtonHTML = `
                             <button class="btn-pay-now" 
-                                onclick="window.openPaymentGateway('${safeOrderId}', '${escapeHTML(String(order.total_price || 0))}', '${tokenPlaceholder}')">
+                                onclick="window.openPaymentGateway('${safeOrderId}', '${escapeHTML(safeTotal)}', '${escapeHTML(safeMethod)}')">
                                 <i class="fas fa-wallet"></i> Bayar Sekarang
                             </button>`;
                             
@@ -1234,31 +1244,55 @@
             }
 
             // =========================================================================
-            // SECURITY PATCH: MIGRASI DARI SNAP MIDTRANS KE URL REDIRECT PAKKASIR
+            // SECURITY PATCH: CUSTOM POP-UP DI HALAMAN PESANAN (ANTI REDIRECT)
             // =========================================================================
             Object.defineProperty(window, 'openPaymentGateway', {
-                value: function(orderId, totalPrice, existingToken) {
+                value: async function(orderId, totalPrice, paymentMethodStr) {
                     activePaymentOrderId = String(orderId);
                     activePaymentTotalText = formatRupiah(totalPrice);
                     
                     document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                     document.getElementById('textInvoiceTotal').innerText = activePaymentTotalText;
 
-                    // Mengambil URL dari localstorage jika user me-refresh halaman, atau dari DB
-                    let safeToken = (existingToken && existingToken !== 'undefined' && existingToken !== '') 
-                        ? String(existingToken) 
-                        : localStorage.getItem(`token_${activePaymentOrderId}`);
-                        
-                    activePaymentToken = safeToken;
+                    // Mencari URL Token yang tersimpan di lokal Storage 
+                    let savedUrl = localStorage.getItem(`token_${activePaymentOrderId}`);
+                    
+                    if (!savedUrl || !savedUrl.startsWith("http")) {
+                        window.showNotification("Gagal", "Link pembayaran tidak ditemukan di memori.", "error");
+                        return;
+                    }
 
-                    // Logika Redirect Pakkasir: Token dari backend dijamin berawalan http jika sukses
-                    if (safeToken && safeToken.startsWith("http")) {
-                        document.getElementById('paymentTutorialModal').classList.remove('active');
-                        // Lemparkan klien langsung ke halaman pembayaran Pakkasir
-                        window.location.href = safeToken;
-                    } else {
-                        // Tampilkan modal manual transfer jika URL gateway gagal / bayar di tempat
-                        document.getElementById('paymentTutorialModal').classList.add('active');
+                    // Tampilkan Loading state pada pop-up
+                    document.getElementById('popupQrisContainer').style.display = 'none';
+                    document.getElementById('popupVaContainer').style.display = 'none';
+                    document.getElementById('paymentTutorialModal').classList.add('active');
+
+                    // Ambil payment_number (QRIS/VA) dari Server kita, karena kita tidak bisa ambil langsung dari Pakasir (CORS / Keamanan API Key)
+                    try {
+                        // Karena kita tidak menyimpan 'payment_number' secara eksplisit di DB saat ini (hanya URL-nya),
+                        // Maka tombol 'Bayar Sekarang' di menu Pesanan akan menampilkan instruksi & Link Fallback, 
+                        // ATAU kita ekstrak jika user belum pernah merefresh halaman sejak checkout.
+                        
+                        const lowerMethod = String(paymentMethodStr).toLowerCase();
+                        
+                        if (lowerMethod.includes("qris") || lowerMethod.includes("wallet")) {
+                            document.getElementById('popupVaContainer').style.display = 'none';
+                            document.getElementById('popupQrisContainer').style.display = 'flex';
+                            document.getElementById('qrcodeBox').innerHTML = `<a href="${savedUrl}" target="_blank" style="text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><i class="fas fa-qrcode fa-3x" style="color:var(--accent-color); margin-bottom:10px;"></i><span style="font-size:12px; font-weight:bold; color:var(--text-main);">Klik untuk melihat<br>QRIS Code</span></a>`;
+                        } else {
+                            document.getElementById('popupQrisContainer').style.display = 'none';
+                            document.getElementById('popupVaContainer').style.display = 'flex';
+                            document.getElementById('popupVaLabel').innerText = "Link Virtual Account";
+                            
+                            let shortUrl = savedUrl;
+                            if (shortUrl.length > 25) shortUrl = shortUrl.substring(0, 22) + "...";
+                            
+                            document.getElementById('popupVaNumber').innerText = "Buka Link Bayar";
+                            document.getElementById('popupVaNumber').innerHTML = `<a href="${savedUrl}" target="_blank" style="color:var(--accent-color); text-decoration:none;">Buka Link Bayar <i class="fas fa-external-link-alt"></i></a>`;
+                        }
+
+                    } catch (e) {
+                        window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
                     }
                 },
                 writable: false,
@@ -1272,18 +1306,6 @@
                 writable: false,
                 configurable: false
             });
-
-            Object.defineProperty(window, 'relaunchSnapWidget', {
-                value: function() {
-                    // Coba panggil ulang gateway jika tombol "Buka Ulang Panel Bayar" diklik
-                    window.openPaymentGateway(activePaymentOrderId, 0, activePaymentToken);
-                },
-                writable: false,
-                configurable: false
-            });
-
-            // Menghapus fungsi loadMidtransDynamically() untuk mencegah kerentanan DOM Clobbering 
-            // dan Client-Side Supply Chain Attack dari script eksternal.
 
             document.addEventListener('DOMContentLoaded', () => {
                 loadFooterData();
