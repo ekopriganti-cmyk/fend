@@ -255,6 +255,14 @@
             .footer-socials { justify-content: flex-start; }
             .payment-grid { grid-template-columns: repeat(4, 60px); justify-content: flex-start; margin: 0; }
         }
+
+        /* Styling Promo Pill (Menyamakan dengan keranjang) */
+        .promo-pill { background: var(--bg-color); border: 2px dashed rgba(9, 132, 227, 0.4); padding: 12px 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; box-shadow: var(--neu-flat-sm); }
+        .promo-pill-code { font-weight: 700; font-size: 13px; color: var(--accent-color); }
+        .promo-pill-desc { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.4; }
+        .pay-logo-wrapper { display: flex; align-items: center; gap: 10px; }
+        .pay-logo-img { height: 16px; width: auto; max-width: 50px; object-fit: contain; border-radius: 4px; transition: all 0.3s ease; }
+        [data-theme="dark"] .pay-logo-wrapper .pay-logo-img { background-color: #ffffff; padding: 2px 6px; }
     </style>
 <script src="analytics.js" async defer></script>     
 </head>
@@ -426,6 +434,81 @@
     </div>
 
     <!-- ========================================== -->
+    <!-- MODAL PEMBAYARAN KETETAPAN PAKKASIR        -->
+    <!-- ========================================== -->
+    <div class="modal-overlay" id="paymentSelectionModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header-inline" style="border-bottom:none; margin-bottom: 5px;">
+                <div style="display:flex; align-items:center; gap:10px;"><h2 style="font-size:18px; font-weight:700; color:var(--accent-color);"><i class="fas fa-exchange-alt"></i> Ganti Pembayaran</h2></div>
+                <button class="modal-close-btn" onclick="window.closePaymentSelectionModal()"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div style="overflow-y: auto; flex-grow: 1; max-height: 60vh; padding-right: 5px;">
+                
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">QRIS / E-Wallet</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('qris')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="pay-logo-img" alt="QRIS" draggable="false"> QRIS / E-Wallet
+                        </span>
+                        <div class="promo-pill-desc">Biaya: 0.7% + Rp 310 (Atau 1%)</div>
+                    </div>
+                </div>
+                
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Virtual Account (Biaya Rp 3.500)</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('bri_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" class="pay-logo-img" alt="BRI" draggable="false"> BRI Virtual Account</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('bni_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" class="pay-logo-img" alt="BNI" draggable="false"> BNI Virtual Account</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('atm_bersama_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/ATM_Bersama_logo.svg" class="pay-logo-img" alt="ATM Bersama" draggable="false"> ATM Bersama VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('bnc_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> BNC VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('cimb_niaga_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/3/38/CIMB_Niaga_logo.svg" class="pay-logo-img" alt="CIMB" draggable="false"> CIMB Niaga VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('maybank_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Maybank VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('permata_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Permata VA</span>
+                    </div>
+                </div>
+                
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Virtual Account (Biaya Rp 2.000)</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('artha_graha_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Artha Graha VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.executeChangePayment('sampoerna_va')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Sampoerna VA</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================== -->
     <!-- MODAL CUSTOM POP-UP PEMBAYARAN PAKASIR     -->
     <!-- ========================================== -->
     <div class="modal-overlay" id="paymentTutorialModal">
@@ -461,7 +544,7 @@
                 </div>
             </div>
             
-            <button class="neu-btn" onclick="window.changePaymentMethodPakasir()" style="background: var(--bg-color); color: var(--accent-color); border: 1px dashed rgba(9, 132, 227, 0.3); margin-bottom: 10px;">
+            <button id="btnOpenChangePayment" class="neu-btn" onclick="window.openPaymentSelectionModal()" style="background: var(--bg-color); color: var(--accent-color); border: 1px dashed rgba(9, 132, 227, 0.3); margin-bottom: 10px;">
                 <i class="fas fa-exchange-alt"></i> Ganti Metode Pembayaran
             </button>
             <button class="neu-btn" onclick="window.closePaymentTutorial()" style="background: var(--bg-color); color: var(--text-muted); border: none; box-shadow: var(--neu-flat-sm);">Tutup</button>
@@ -547,9 +630,8 @@
             let allOrders = [];
             let currentStatusFilter = 'Semua';
             
-            let activePaymentToken = '';
             let activePaymentOrderId = '';
-            let activePaymentTotalText = '';
+            let isChangingPayment = false;
 
             function formatRupiah(number) { 
                 let parsed = parseInt(number) || 0;
@@ -1169,7 +1251,7 @@
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
-                        // Mengirim orderId, gross_amount, dan payment_type
+                        // Meneruskan orderId dan gross_amount
                         const safeTotal = String(order.gross_amount || order.total_price || 0);
                         const safeMethod = String(order.payment_type || '');
                         
@@ -1237,7 +1319,7 @@
             }
 
             // =========================================================================
-            // SECURITY PATCH: CUSTOM POP-UP DI HALAMAN PESANAN (ANTI REDIRECT)
+            // MENAMPILKAN POP-UP PEMBAYARAN KETIKA "BAYAR SEKARANG" DIKLIK
             // =========================================================================
             Object.defineProperty(window, 'openPaymentGateway', {
                 value: async function(orderId, totalPrice, paymentMethodStr) {
@@ -1247,16 +1329,14 @@
                     document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                     document.getElementById('textInvoiceTotal').innerText = activePaymentTotalText;
 
-                    // Mengambil nomor pembayaran raw dari local storage (disimpan saat checkout di keranjang.html)
                     let rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`);
                     
-                    // Fallback apabila Local Storage dihapus
                     if (!rawPayNum) {
                         const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
                         if(orderData && orderData.payment_number) {
                             rawPayNum = orderData.payment_number;
                         } else {
-                            window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori. Sistem aplikasi/E-Wallet Anda mungkin sudah menyimpan notifikasi tagihan ini, atau silakan buat pesanan baru.", "error");
+                            window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori.", "error");
                             return;
                         }
                     }
@@ -1268,7 +1348,6 @@
                     try {
                         const lowerMethod = String(paymentMethodStr).toLowerCase();
                         
-                        // Validasi Apakah QRIS atau Nomor Virtual Account
                         if (lowerMethod === 'qris' || lowerMethod.includes('wallet')) {
                             document.getElementById('popupVaContainer').style.display = 'none';
                             document.getElementById('popupQrisContainer').style.display = 'flex';
@@ -1303,11 +1382,93 @@
             });
 
             // =========================================================================
-            // FUNGSI GANTI METODE PEMBAYARAN VIA PAKASIR HEADLESS
+            // ALUR GANTI METODE PEMBAYARAN HEADLESS (MENEMBAK RUST BACKEND)
             // =========================================================================
-            Object.defineProperty(window, 'changePaymentMethodPakasir', {
+            
+            // 1. Membuka Modal Pilihan Bank/E-Wallet
+            Object.defineProperty(window, 'openPaymentSelectionModal', {
                 value: function() {
-                    window.showNotification("Informasi", "Untuk mengganti metode pembayaran yang sudah terkunci oleh sistem, silakan <b>Batalkan</b> pesanan ini terlebih dahulu lalu buat ulang pesanan di keranjang.", "warning");
+                    if(!activePaymentOrderId) return;
+                    document.getElementById('paymentTutorialModal').classList.remove('active');
+                    document.getElementById('paymentSelectionModal').classList.add('active');
+                },
+                writable: false,
+                configurable: false
+            });
+
+            // 2. Menutup Modal Pilihan Bank
+            Object.defineProperty(window, 'closePaymentSelectionModal', {
+                value: function() {
+                    document.getElementById('paymentSelectionModal').classList.remove('active');
+                },
+                writable: false,
+                configurable: false
+            });
+
+            // 3. Mengeksekusi API Backend saat Bank dipilih
+            Object.defineProperty(window, 'executeChangePayment', {
+                value: async function(newMethodId) {
+                    if (isChangingPayment || !activePaymentOrderId) return;
+                    
+                    isChangingPayment = true;
+                    window.closePaymentSelectionModal();
+                    
+                    // Memunculkan loading sementara
+                    document.getElementById('ordersContainer').innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--accent-color); margin-bottom: 20px;"></i>
+                            <div class="empty-text">Sedang Menghubungi Bank...</div>
+                            <div class="empty-subtext">Mohon jangan tutup halaman ini.</div>
+                        </div>
+                    `;
+
+                    try {
+                        const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${session.access_token}`
+                            },
+                            body: JSON.stringify({
+                                order_id: activePaymentOrderId,
+                                new_payment_method: String(newMethodId)
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (!res.ok) {
+                            throw new Error(data.error || "Gagal mengubah metode pembayaran");
+                        }
+
+                        // Mengubah nomor memori lokal sesuai yang baru
+                        localStorage.setItem(`paynum_${activePaymentOrderId}`, data.payment_number);
+                        
+                        // Me-*refresh* kerangka data pesanan lokal
+                        const orderIndex = allOrders.findIndex(o => String(o.id) === activePaymentOrderId);
+                        if(orderIndex !== -1) {
+                            allOrders[orderIndex].payment_type = newMethodId;
+                            allOrders[orderIndex].payment_number = data.payment_number;
+                            allOrders[orderIndex].gross_amount = data.new_total;
+                            // Update cache
+                            setLocalCache('bakoel_orders_history', allOrders, 5 * 60 * 1000);
+                        }
+
+                        // Memuat ulang UI dan langsung membuka pop-up dengan nomor yang baru
+                        renderOrders(currentStatusFilter);
+                        window.showNotification("Berhasil", "Metode pembayaran telah diganti. Silakan lakukan pembayaran.", "success");
+                        
+                        // Menunggu notifikasi tertutup sebelum buka pop-up baru
+                        setTimeout(() => {
+                            window.openPaymentGateway(activePaymentOrderId, data.new_total, newMethodId);
+                        }, 2000);
+
+                    } catch(e) {
+                        window.showNotification("Gagal", escapeHTML(e.message), "error");
+                        renderOrders(currentStatusFilter); // Kembalikan UI seperti semula
+                    } finally {
+                        isChangingPayment = false;
+                    }
                 },
                 writable: false,
                 configurable: false
