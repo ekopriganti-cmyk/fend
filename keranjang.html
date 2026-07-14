@@ -11,7 +11,6 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     
-    <!-- SECURITY PATCH: Menambahkan cdnjs.cloudflare.com untuk script QR Code aman. Bebas Midtrans. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -196,26 +195,10 @@
         <a href="index.html" class="logo"><i class="fas fa-box-open"></i>BAKOEL</a>
         <div class="controls">
             <div class="theme-switch" id="themeToggle"><div class="switch-handle"><i class="fas fa-sun" id="switchIcon"></i></div></div>
-            
-            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo">
-                <i class="fas fa-tags"></i>
-                <span class="badge-count" id="promoBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan">
-                <i class="fas fa-box"></i>
-                <span class="badge-count" id="orderBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span>
-            </a>
-            
-            <!-- Elemen ini akan otomatis digantikan oleh JS jika pengguna sudah login -->
-            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
-                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-            </a>
+            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo"><i class="fas fa-tags"></i><span class="badge-count" id="promoBadge" style="display: none;">0</span></a>
+            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan"><i class="fas fa-box"></i><span class="badge-count" id="orderBadge" style="display: none;">0</span></a>
+            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span></a>
+            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a>
         </div>
     </div>
 
@@ -278,7 +261,9 @@
         </div>
     </div>
 
-    <!-- MODAL CUSTOM POPUP PEMBAYARAN (Baru) -->
+    <!-- ========================================== -->
+    <!-- MODAL CUSTOM POP-UP PEMBAYARAN PAKASIR     -->
+    <!-- ========================================== -->
     <div class="modal-overlay" id="customPaymentPopupModal">
         <div class="modal-content" style="max-width: 350px; text-align: center; padding: 25px 20px;">
             <div class="modal-header" style="justify-content: center; margin-bottom: 10px;">
@@ -303,9 +288,9 @@
 
                 <!-- VA Container -->
                 <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Nomor Virtual Account</div>
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
-                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px;">-</span>
+                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px; word-break: break-all;">-</span>
                         <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Salin dan transfer tepat sesuai nominal agar otomatis terverifikasi oleh sistem.</p>
@@ -432,10 +417,7 @@
             <div style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="text" id="manualVoucherInput" class="neu-input" placeholder="Kode promo..." style="text-transform: uppercase;" spellcheck="false"><button class="neu-btn" onclick="window.applyVoucherManual()" id="btnApplyManual">Pakai</button></div>
             <div id="modalVoucherMsg" style="font-size: 11px; margin-bottom: 12px; font-weight: 600; text-align: center; color: #ff4757;"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Tersedia:</span><button onclick="window.resetVoucher()" style="background:none; border:none; color:#ff4757; font-size:10px; font-weight:bold; cursor:pointer;">Reset Filter</button></div>
-            
-            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer">
-                <div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div>
-            </div>
+            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer"><div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div></div>
         </div>
     </div>
 
@@ -469,27 +451,16 @@
     </div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="bottom-nav-item">
-            <i class="fas fa-home"></i><span>Beranda</span>
-        </a>
-        <a href="promo.html" class="bottom-nav-item">
-            <div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span>
-        </a>
-        <a href="keranjang.html" class="bottom-nav-item active">
-            <div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span>
-        </a>
-        <a href="pesanan.html" class="bottom-nav-item">
-            <div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span>
-        </a>
-        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn">
-            <i class="fas fa-user"></i><span>Akun</span>
-        </a>
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
+        <a href="promo.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span></a>
+        <a href="keranjang.html" class="bottom-nav-item active"><div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span></a>
+        <a href="pesanan.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span></a>
+        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
     </nav>
 
     <script>
         // =========================================================================
         // SECURITY PATCH: KUNCI LINGKUNGAN JAVASCRIPT & SANITASI MUTLAK
-        // Mencegah Prototype Pollution (#89), Clickjacking (#3)
         // =========================================================================
         "use strict";
 
@@ -519,7 +490,7 @@
 
         (function() {
             const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rusty-c22o.onrender.com';
+            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
 
             const sessionData = localStorage.getItem('user_session');
             if (!sessionData) { window.location.replace('login.html'); return; }
@@ -561,6 +532,7 @@
                 document.getElementById('switchIcon').classList.replace(isDark ? 'fa-moon' : 'fa-sun', isDark ? 'fa-sun' : 'fa-moon');
             });
 
+            // Utils & UI Sync
             function showNotification(title, message, type, redirectUrl = null) {
                 const notifModal = document.getElementById('notificationModal');
                 const notifIcon = document.getElementById('notifIcon');
@@ -588,18 +560,6 @@
                 const loginBtn = document.getElementById('navLoginBtn');
                 const mobileAccountBtn = document.getElementById('mobileAccountBtn');
 
-                const savedName = escapeHTML(session.name || (session.user && session.user.name) || "User");
-                const tempNickname = savedName.split(' ')[0]; 
-                const tempAvatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(savedName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
-                
-                loginBtn.className = 'nav-profile-badge hide-on-mobile';
-                loginBtn.href = 'akun.html';
-                loginBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false"><span>${tempNickname}</span>`;
-
-                if (mobileAccountBtn) {
-                    mobileAccountBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${tempNickname}</span>`;
-                }
-
                 try {
                     const userRes = await fetch(`${BASE_URL}/api/user`, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
                     if (userRes.ok) {
@@ -610,12 +570,12 @@
                         else if(globalAddress && globalPhone) { document.getElementById('summaryAddressVal').innerText = "Belum Ada Kodepos"; document.getElementById('summaryAddressVal').style.color = "var(--text-main)"; }
                         else { document.getElementById('summaryAddressVal').innerText = "Belum Diatur"; }
 
-                        // Perbarui UI Navigasi dengan data dari API
+                        // Tampilkan Profil jika sudah login
                         const rawDisplayName = userData.nama_panggilan || (userData.nama_lengkap ? userData.nama_lengkap.split(' ')[0] : "User");
                         const displayName = escapeHTML(rawDisplayName);
                         const avatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
                         
-                        loginBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false"><span>${displayName}</span>`;
+                        if(loginBtn) { loginBtn.className = 'nav-profile-badge hide-on-mobile'; loginBtn.href = 'akun.html'; loginBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false"><span>${displayName}</span>`; }
                         if (mobileAccountBtn) { mobileAccountBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${displayName}</span>`; }
                     }
                     syncBadges(session.access_token);
@@ -896,7 +856,6 @@
                 
                 adminFeeAmount = 0;
 
-                // Kalkulasi akurat biaya Gateway Pakasir
                 if (selectedPaymentMethodId === 'qris') {
                     let calcFee = baseAmount <= 105000 ? (baseAmount * 0.007) + 310 : (baseAmount * 0.01);
                     adminFeeAmount = Math.round(calcFee);
@@ -957,8 +916,7 @@
             Object.defineProperty(window, 'closeConfirmModal', { value: function() { document.getElementById('confirmCheckoutModal').classList.remove('active'); }, writable: false, configurable: false });
             
             // =========================================================================
-            // EKSEKUSI CHECKOUT & TAMPILKAN CUSTOM POP-UP
-            // Mencegah Serangan Replay & Race Conditions (Double Click)
+            // EKSEKUSI CHECKOUT & TAMPILKAN CUSTOM POP-UP (Anti Spam & Race Condition)
             // =========================================================================
             Object.defineProperty(window, 'executeCheckout', {
                 value: async function() {
@@ -970,7 +928,6 @@
                         const voucherCodes = activeVouchers.map(v => String(v.code));
                         const payloadItems = cartItems.map(x => ({ product_id: x.product_id, quantity: Number(x.quantity) }));
 
-                        // Hanya mengirim data murni, backend tidak percaya kalkulasi klien (Anti Parameter Tampering #23)
                         const res = await fetch(`${BASE_URL}/api/checkout`, { 
                             method: 'POST', 
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
@@ -985,9 +942,12 @@
                         if (cartBadge) { cartBadge.style.display = 'none'; cartBadge.innerText = '0'; }
                         if (mobileCartBadge) { mobileCartBadge.style.display = 'none'; mobileCartBadge.innerText = '0'; }
 
-                        if (result.payment_url) localStorage.setItem(`token_${result.order_id}`, result.payment_url);
+                        if (result.payment_url) {
+                            localStorage.setItem(`token_${result.order_id}`, result.payment_url);
+                            // MENYIMPAN RAW PAYMENT NUMBER UNTUK PESANAN.HTML
+                            localStorage.setItem(`paynum_${result.order_id}`, result.payment_number);
+                        }
 
-                        // TAMPILKAN CUSTOM MODAL POPUP DI HALAMAN KERANJANG
                         document.getElementById('popupTotalAmount').innerText = formatRupiah(result.total_payment);
                         
                         if (result.payment_method === 'qris') {
@@ -995,7 +955,6 @@
                             document.getElementById('popupQrisContainer').style.display = 'flex';
                             document.getElementById('qrcodeBox').innerHTML = ""; 
                             
-                            // Generate QR Code Lokal (Aman dari XSS karena disanitasi)
                             new QRCode(document.getElementById("qrcodeBox"), {
                                 text: String(result.payment_number), 
                                 width: 180, height: 180,
