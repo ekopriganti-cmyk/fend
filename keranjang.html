@@ -196,10 +196,25 @@
         <a href="index.html" class="logo"><i class="fas fa-box-open"></i>BAKOEL</a>
         <div class="controls">
             <div class="theme-switch" id="themeToggle"><div class="switch-handle"><i class="fas fa-sun" id="switchIcon"></i></div></div>
-            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo"><i class="fas fa-tags"></i><span class="badge-count" id="promoBadge" style="display: none;">0</span></a>
-            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan"><i class="fas fa-box"></i><span class="badge-count" id="orderBadge" style="display: none;">0</span></a>
-            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span></a>
-            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a>
+            
+            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo">
+                <i class="fas fa-tags"></i>
+                <span class="badge-count" id="promoBadge" style="display: none;">0</span>
+            </a>
+            
+            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan">
+                <i class="fas fa-box"></i>
+                <span class="badge-count" id="orderBadge" style="display: none;">0</span>
+            </a>
+            
+            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span>
+            </a>
+            
+            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
+                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
+            </a>
         </div>
     </div>
 
@@ -309,10 +324,12 @@
                 <div class="modal-title-box"><h2><i class="fas fa-map-marker-alt"></i> Titik Pengiriman</h2></div>
                 <button class="modal-close" onclick="window.closeAddressModal()"><i class="fas fa-times"></i></button>
             </div>
+            
             <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px; margin-bottom: 15px;">
                 <div style="margin-bottom: 20px;">
                     <span class="input-label">Geser Pin ke Lokasi Pasti</span>
                     <div id="mapPicker" style="height: 180px; border-radius: 15px; z-index: 1; box-shadow: var(--neu-pressed-sm); margin-bottom: 12px;"></div>
+                    
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div id="mapStatus" style="font-size: 10px; color: var(--text-muted); font-weight: 600; line-height: 1.3;">Geser pin merah ke<br>atas rumah Anda</div>
                         <button type="button" onclick="window.autoGetLocation()" class="neu-btn" style="padding: 8px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
@@ -320,11 +337,13 @@
                         </button>
                     </div>
                 </div>
+
                 <div class="input-group"><span class="input-label">Nama Penerima</span><input type="text" id="modalShipName" class="neu-input" placeholder="Budi Santoso" maxlength="100" spellcheck="false"></div>
                 <div class="input-group"><span class="input-label">Nomor WhatsApp</span><input type="tel" id="modalShipPhone" class="neu-input" placeholder="08123456789" maxlength="20"></div>
                 <div class="input-group"><span class="input-label">Kode Pos (Otomatis/Manual)</span><input type="text" id="modalShipZip" class="neu-input" placeholder="29432" inputmode="numeric" pattern="[0-9]*" maxlength="10"></div>
                 <div class="input-group"><span class="input-label">Detail Alamat (Patokan)</span><textarea id="modalShipAddress" class="neu-input" rows="2" placeholder="Contoh: Pagar hitam depan masjid..." maxlength="500" spellcheck="false"></textarea></div>
             </div>
+            
             <button class="btn-checkout" onclick="window.saveAddressInfo()" style="flex-shrink: 0;">Simpan & Pilih Kurir</button>
         </div>
     </div>
@@ -418,7 +437,10 @@
             <div style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="text" id="manualVoucherInput" class="neu-input" placeholder="Kode promo..." style="text-transform: uppercase;" spellcheck="false"><button class="neu-btn" onclick="window.applyVoucherManual()" id="btnApplyManual">Pakai</button></div>
             <div id="modalVoucherMsg" style="font-size: 11px; margin-bottom: 12px; font-weight: 600; text-align: center; color: #ff4757;"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Tersedia:</span><button onclick="window.resetVoucher()" style="background:none; border:none; color:#ff4757; font-size:10px; font-weight:bold; cursor:pointer;">Reset Filter</button></div>
-            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer"><div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div></div>
+            
+            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer">
+                <div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div>
+            </div>
         </div>
     </div>
 
@@ -452,11 +474,21 @@
     </div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
-        <a href="promo.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span></a>
-        <a href="keranjang.html" class="bottom-nav-item active"><div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span></a>
-        <a href="pesanan.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span></a>
-        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
+        <a href="index.html" class="bottom-nav-item">
+            <i class="fas fa-home"></i><span>Beranda</span>
+        </a>
+        <a href="promo.html" class="bottom-nav-item">
+            <div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span>
+        </a>
+        <a href="keranjang.html" class="bottom-nav-item active">
+            <div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span>
+        </a>
+        <a href="pesanan.html" class="bottom-nav-item">
+            <div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span>
+        </a>
+        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn">
+            <i class="fas fa-user"></i><span>Akun</span>
+        </a>
     </nav>
 
     <script>
@@ -492,7 +524,7 @@
 
         (function() {
             const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rusty-c22o.onrender.com';
+            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
 
             const sessionData = localStorage.getItem('user_session');
             if (!sessionData) { window.location.replace('login.html'); return; }
