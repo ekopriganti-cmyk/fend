@@ -15,8 +15,8 @@
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     
-    <!-- Library QRCode JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecJQxFIb53auzZAHuH2n4WhAfrwD1xS57ZvHn1R-k4D1XhO1y2q/U0g/U..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <!-- Library QRCode JS (Integrity Hash Dihapus Agar Tidak Diblokir Browser) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -554,15 +554,6 @@
     <script>
         "use strict";
 
-        // Mencegah eksploitasi Prototype Pollution dan DOM Clobbering
-        Object.freeze(Object.prototype);
-        Object.freeze(Array.prototype);
-        Object.freeze(String.prototype);
-
-        if (window.top !== window.self) {
-            window.top.location = window.self.location;
-        }
-
         function escapeHTML(str) {
             if (!str) return '';
             return String(str).replace(/[&<>'"]/g, 
@@ -638,55 +629,46 @@
                 return "Rp " + parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
             }
 
-            // Mendaftarkan Fungsi Notifikasi ke Global secara Aman
-            Object.defineProperty(window, 'showNotification', {
-                value: function(title, message, type, redirectUrl = null) {
-                    const notifModal = document.getElementById('notificationModal');
-                    const notifIcon = document.getElementById('notifIcon');
-                    const notifTitle = document.getElementById('notifTitle');
-                    const notifMessage = document.getElementById('notifMessage');
-                    const notifBtn = document.getElementById('notifBtn');
+            // Fungsi Global Yang Aman dari Blockir Descriptor
+            window.showNotification = function(title, message, type, redirectUrl = null) {
+                const notifModal = document.getElementById('notificationModal');
+                const notifIcon = document.getElementById('notifIcon');
+                const notifTitle = document.getElementById('notifTitle');
+                const notifMessage = document.getElementById('notifMessage');
+                const notifBtn = document.getElementById('notifBtn');
 
-                    if(type === 'success') {
-                        notifIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i>';
-                        notifTitle.style.color = '#27ae60';
-                        notifBtn.innerText = 'Lanjut';
-                    } else if(type === 'error') {
-                        notifIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ff4757;"></i>';
-                        notifTitle.style.color = '#ff4757';
-                        notifBtn.innerText = 'Tutup';
-                    } else if(type === 'warning') {
-                        notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>';
-                        notifTitle.style.color = '#e67e22';
-                        notifBtn.innerText = redirectUrl ? 'Login Sekarang' : 'Mengerti';
-                    }
+                if(type === 'success') {
+                    notifIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i>';
+                    notifTitle.style.color = '#27ae60';
+                    notifBtn.innerText = 'Lanjut';
+                } else if(type === 'error') {
+                    notifIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ff4757;"></i>';
+                    notifTitle.style.color = '#ff4757';
+                    notifBtn.innerText = 'Tutup';
+                } else if(type === 'warning') {
+                    notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>';
+                    notifTitle.style.color = '#e67e22';
+                    notifBtn.innerText = redirectUrl ? 'Login Sekarang' : 'Mengerti';
+                }
 
-                    notifTitle.textContent = String(title);
-                    notifMessage.innerHTML = String(message); 
-                    
-                    notifBtn.onclick = function() { 
-                        notifModal.classList.remove('active'); 
-                        if(redirectUrl) window.location.href = escapeHTML(redirectUrl);
-                    };
-                    notifModal.classList.add('active');
-                },
-                writable: false,
-                configurable: false
-            });
+                notifTitle.textContent = String(title);
+                notifMessage.innerHTML = String(message); 
+                
+                notifBtn.onclick = function() { 
+                    notifModal.classList.remove('active'); 
+                    if(redirectUrl) window.location.href = escapeHTML(redirectUrl);
+                };
+                notifModal.classList.add('active');
+            };
             
-            // Mendaftarkan Fungsi Copy VA dengan Aman
-            Object.defineProperty(window, 'copyToClipboard', {
-                value: function(elementId) {
-                    const text = document.getElementById(elementId).innerText;
-                    navigator.clipboard.writeText(text).then(() => { 
-                        window.showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); 
-                    }).catch(err => { 
-                        window.showNotification("Gagal", "Gagal menyalin nomor.", "error"); 
-                    });
-                }, 
-                writable: false, 
-                configurable: false
-            });
+            window.copyToClipboard = function(elementId) {
+                const text = document.getElementById(elementId).innerText;
+                navigator.clipboard.writeText(text).then(() => { 
+                    window.showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); 
+                }).catch(err => { 
+                    window.showNotification("Gagal", "Gagal menyalin nomor.", "error"); 
+                });
+            };
 
             function handleLogout() {
                 localStorage.removeItem('user_session'); 
@@ -875,274 +857,250 @@
                 }
             }
 
-            // =========================================================================
-            // FUNGSI BARU: MINTA, LOADING, DAN UNDUH ARSIP PDF (SMART POLLING)
-            // =========================================================================
             let arsipCheckInterval = null;
 
-            Object.defineProperty(window, 'mintaArsipPDF', {
-                value: async function(event, isAutoCheck = false) {
-                    const inputEl = document.getElementById("inputBulanArsip");
-                    const pesanEl = document.getElementById("pesanArsip");
-                    const btnEl = document.getElementById("btnMintaArsip"); 
-                    
-                    const inputBulan = inputEl ? inputEl.value : '';
-                    
-                    if (!inputBulan) {
-                        if(!isAutoCheck) {
-                            pesanEl.style.color = "#ff4757";
-                            pesanEl.innerHTML = "<i class='fas fa-exclamation-circle'></i> Harap pilih bulan dan tahun terlebih dahulu!";
+            window.mintaArsipPDF = async function(event, isAutoCheck = false) {
+                const inputEl = document.getElementById("inputBulanArsip");
+                const pesanEl = document.getElementById("pesanArsip");
+                const btnEl = document.getElementById("btnMintaArsip"); 
+                
+                const inputBulan = inputEl ? inputEl.value : '';
+                
+                if (!inputBulan) {
+                    if(!isAutoCheck) {
+                        pesanEl.style.color = "#ff4757";
+                        pesanEl.innerHTML = "<i class='fas fa-exclamation-circle'></i> Harap pilih bulan dan tahun terlebih dahulu!";
+                    }
+                    return;
+                }
+
+                if (!session || !session.access_token) return;
+
+                if (arsipCheckInterval && !isAutoCheck) {
+                    clearInterval(arsipCheckInterval);
+                    arsipCheckInterval = null;
+                }
+
+                if (!isAutoCheck) {
+                    pesanEl.style.color = "var(--accent-color)";
+                    pesanEl.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Menghubungi brankas arsip...";
+                    if(btnEl) { 
+                        btnEl.disabled = true; 
+                        btnEl.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Memproses...";
+                        btnEl.style.opacity = '0.7'; 
+                    }
+                }
+
+                try {
+                    const response = await fetch(`${BASE_URL}/api/archive/request`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({ bulan_tahun: inputBulan })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        if (result.download_url) {
+                            if (arsipCheckInterval) clearInterval(arsipCheckInterval);
+                            
+                            if(btnEl) {
+                                btnEl.disabled = false;
+                                btnEl.style.opacity = '1';
+                                btnEl.innerHTML = "<i class='fas fa-file-pdf'></i> Unduh PDF Sekarang";
+                                btnEl.style.background = "#27ae60"; 
+                                btnEl.style.color = "#ffffff";
+                            }
+
+                            if (!isAutoCheck) {
+                                pesanEl.style.color = "#27ae60";
+                                pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip siap! Mengunduh file Anda...";
+                                
+                                try {
+                                    const dlRes = await fetch(`${BASE_URL}${result.download_url}`, {
+                                        method: "GET",
+                                        headers: { "Authorization": `Bearer ${session.access_token}` }
+                                    });
+                                    
+                                    if (dlRes.ok) {
+                                        const blob = await dlRes.blob();
+                                        const url = window.URL.createObjectURL(blob);
+                                        const a = document.createElement('a');
+                                        a.href = url;
+                                        a.download = `Riwayat_Bakoel_${inputBulan}.pdf`;
+                                        document.body.appendChild(a);
+                                        a.click();
+                                        a.remove();
+                                        window.URL.revokeObjectURL(url);
+                                        
+                                        pesanEl.innerHTML = `<i class='fas fa-check-circle'></i> Berhasil diunduh! Silakan cek file di perangkat Anda.`;
+                                    } else {
+                                        pesanEl.style.color = "#ff4757";
+                                        pesanEl.innerHTML = `<i class='fas fa-times-circle'></i> Gagal mengunduh file dari satelit.`;
+                                    }
+                                } catch(e) {
+                                    pesanEl.style.color = "#ff4757";
+                                    pesanEl.innerHTML = `<i class='fas fa-wifi'></i> Koneksi terputus saat proses unduhan.`;
+                                }
+                            } else {
+                                pesanEl.style.color = "#27ae60";
+                                pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip untuk bulan ini sudah siap diunduh.";
+                            }
+                        } else {
+                            if(btnEl) {
+                                btnEl.disabled = true;
+                                btnEl.style.opacity = '0.7';
+                                btnEl.innerHTML = "<i class='fas fa-cog fa-spin'></i> Sedang Merakit PDF...";
+                                btnEl.style.background = "var(--bg-color)";
+                                btnEl.style.color = "var(--text-main)";
+                            }
+                            pesanEl.style.color = "var(--accent-color)";
+                            pesanEl.innerHTML = `<i class='fas fa-tools'></i> ${escapeHTML(result.message)} <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(File akan otomatis terunduh saat selesai. Anda boleh pindah halaman dan kembali lagi nanti).</span>`;
+                            
+                            if (!arsipCheckInterval) {
+                                arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
+                            }
                         }
+                    } else {
+                        if (result.error && result.error.includes("sedang dirakit")) {
+                            if(btnEl) {
+                                btnEl.disabled = true;
+                                btnEl.style.opacity = '0.7';
+                                btnEl.innerHTML = "<i class='fas fa-cog fa-spin'></i> Sedang Merakit PDF...";
+                                btnEl.style.background = "var(--bg-color)";
+                                btnEl.style.color = "var(--text-main)";
+                            }
+                            pesanEl.style.color = "var(--accent-color)";
+                            pesanEl.innerHTML = `<i class='fas fa-tools'></i> Arsip sedang dirakit di awan... <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(Sistem akan otomatis mengunduh saat selesai).</span>`;
+                            
+                            if (!arsipCheckInterval) {
+                                arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
+                            }
+                        } else {
+                            if (arsipCheckInterval) clearInterval(arsipCheckInterval);
+                            if(btnEl) { 
+                                btnEl.disabled = false; 
+                                btnEl.style.opacity = '1'; 
+                                btnEl.innerHTML = "<i class='fas fa-download'></i> Minta Arsip PDF";
+                            }
+                            pesanEl.style.color = "#ff4757";
+                            pesanEl.innerHTML = `<i class='fas fa-times-circle'></i> ${escapeHTML(result.error || 'Terjadi kesalahan sistem')}`;
+                        }
+                    }
+                } catch (error) {
+                    if (arsipCheckInterval) clearInterval(arsipCheckInterval);
+                    pesanEl.style.color = "#ff4757";
+                    pesanEl.innerHTML = "<i class='fas fa-wifi'></i> Koneksi ke server terputus. Coba lagi nanti.";
+                    if(btnEl) { 
+                        btnEl.disabled = false; 
+                        btnEl.style.opacity = '1'; 
+                        btnEl.innerHTML = "<i class='fas fa-download'></i> Minta Arsip PDF";
+                    }
+                }
+            };
+
+            window.toggleItems = function(orderId, hiddenCount) {
+                const safeOrderId = escapeHTML(String(orderId));
+                const container = document.getElementById(`hidden-items-${safeOrderId}`);
+                const btn = document.getElementById(`toggle-btn-${safeOrderId}`);
+                
+                if(!container || !btn) return;
+
+                if (container.classList.contains('active')) {
+                    container.classList.remove('active');
+                    btn.innerHTML = `+ ${Number(hiddenCount)} barang lainnya`;
+                } else {
+                    container.classList.add('active');
+                    btn.innerHTML = `<i class="fas fa-chevron-up"></i> Sembunyikan barang`;
+                }
+            };
+
+            window.filterOrders = function(status) {
+                currentStatusFilter = String(status);
+                
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    if (btn.getAttribute('data-status') === status) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+                
+                const archiveBox = document.getElementById('archiveBoxContainer');
+                if (archiveBox) {
+                    if (status === 'Selesai' || status === 'Dibatalkan') {
+                        archiveBox.style.display = 'flex';
+                    } else {
+                        archiveBox.style.display = 'none';
+                    }
+                }
+
+                renderOrders(currentStatusFilter);
+            };
+
+            window.trackOrderRealtime = async function(orderId) {
+                const modal = document.getElementById('trackingModal');
+                const content = document.getElementById('trackingContent');
+                
+                modal.classList.add('active');
+                content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-satellite-dish fa-spin fa-3x" style="color:var(--accent-color)"></i><p style="margin-top:20px; font-size:13px; font-weight:600; color:var(--text-main);">Menghubungi satelit ekspedisi...</p></div>`;
+                
+                try {
+                    const res = await fetch(`${BASE_URL}/api/track/${escapeHTML(orderId)}`);
+                    const data = await res.json();
+                    
+                    if(!res.ok || data.success === false) {
+                        content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-exclamation-triangle fa-3x" style="color:#ff4757"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">${escapeHTML(data.error || 'Data pelacakan belum tersedia dari kurir.')}</p></div>`;
                         return;
                     }
-
-                    if (!session || !session.access_token) return;
-
-                    if (arsipCheckInterval && !isAutoCheck) {
-                        clearInterval(arsipCheckInterval);
-                        arsipCheckInterval = null;
-                    }
-
-                    if (!isAutoCheck) {
-                        pesanEl.style.color = "var(--accent-color)";
-                        pesanEl.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Menghubungi brankas arsip...";
-                        if(btnEl) { 
-                            btnEl.disabled = true; 
-                            btnEl.innerHTML = "<i class='fas fa-spinner fa-spin'></i> Memproses...";
-                            btnEl.style.opacity = '0.7'; 
-                        }
-                    }
-
-                    try {
-                        const BASE_REQ_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
-
-                        const response = await fetch(`${BASE_REQ_URL}/api/archive/request`, {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${session.access_token}`
-                            },
-                            body: JSON.stringify({ bulan_tahun: inputBulan })
-                        });
-
-                        const result = await response.json();
-
-                        if (response.ok) {
-                            if (result.download_url) {
-                                // SKENARIO 1: PDF SUDAH JADI
-                                if (arsipCheckInterval) clearInterval(arsipCheckInterval);
-                                
-                                if(btnEl) {
-                                    btnEl.disabled = false;
-                                    btnEl.style.opacity = '1';
-                                    btnEl.innerHTML = "<i class='fas fa-file-pdf'></i> Unduh PDF Sekarang";
-                                    btnEl.style.background = "#27ae60"; 
-                                    btnEl.style.color = "#ffffff";
-                                }
-
-                                if (!isAutoCheck) {
-                                    pesanEl.style.color = "#27ae60";
-                                    pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip siap! Mengunduh file Anda...";
-                                    
-                                    try {
-                                        const dlRes = await fetch(`${BASE_REQ_URL}${result.download_url}`, {
-                                            method: "GET",
-                                            headers: { "Authorization": `Bearer ${session.access_token}` }
-                                        });
-                                        
-                                        if (dlRes.ok) {
-                                            const blob = await dlRes.blob();
-                                            const url = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = url;
-                                            a.download = `Riwayat_Bakoel_${inputBulan}.pdf`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            window.URL.revokeObjectURL(url);
-                                            
-                                            pesanEl.innerHTML = `<i class='fas fa-check-circle'></i> Berhasil diunduh! Silakan cek file di perangkat Anda.`;
-                                        } else {
-                                            pesanEl.style.color = "#ff4757";
-                                            pesanEl.innerHTML = `<i class='fas fa-times-circle'></i> Gagal mengunduh file dari satelit.`;
-                                        }
-                                    } catch(e) {
-                                        pesanEl.style.color = "#ff4757";
-                                        pesanEl.innerHTML = `<i class='fas fa-wifi'></i> Koneksi terputus saat proses unduhan.`;
-                                    }
-                                } else {
-                                    pesanEl.style.color = "#27ae60";
-                                    pesanEl.innerHTML = "<i class='fas fa-check-circle'></i> Arsip untuk bulan ini sudah siap diunduh.";
-                                }
-                            } else {
-                                // SKENARIO 2: BARU MASUK ANTREAN
-                                if(btnEl) {
-                                    btnEl.disabled = true;
-                                    btnEl.style.opacity = '0.7';
-                                    btnEl.innerHTML = "<i class='fas fa-cog fa-spin'></i> Sedang Merakit PDF...";
-                                    btnEl.style.background = "var(--bg-color)";
-                                    btnEl.style.color = "var(--text-main)";
-                                }
-                                pesanEl.style.color = "var(--accent-color)";
-                                pesanEl.innerHTML = `<i class='fas fa-tools'></i> ${escapeHTML(result.message)} <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(File akan otomatis terunduh saat selesai. Anda boleh pindah halaman dan kembali lagi nanti).</span>`;
-                                
-                                if (!arsipCheckInterval) {
-                                    arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
-                                }
-                            }
-                        } else {
-                            // SKENARIO 3: ERROR ATAU SEDANG DIRAKIT
-                            if (result.error && result.error.includes("sedang dirakit")) {
-                                if(btnEl) {
-                                    btnEl.disabled = true;
-                                    btnEl.style.opacity = '0.7';
-                                    btnEl.innerHTML = "<i class='fas fa-cog fa-spin'></i> Sedang Merakit PDF...";
-                                    btnEl.style.background = "var(--bg-color)";
-                                    btnEl.style.color = "var(--text-main)";
-                                }
-                                pesanEl.style.color = "var(--accent-color)";
-                                pesanEl.innerHTML = `<i class='fas fa-tools'></i> Arsip sedang dirakit di awan... <br><span style="font-size:11px; color:var(--text-muted); font-weight:500;">(Sistem akan otomatis mengunduh saat selesai).</span>`;
-                                
-                                if (!arsipCheckInterval) {
-                                    arsipCheckInterval = setInterval(() => window.mintaArsipPDF(null, true), 5000);
-                                }
-                            } else {
-                                if (arsipCheckInterval) clearInterval(arsipCheckInterval);
-                                if(btnEl) { 
-                                    btnEl.disabled = false; 
-                                    btnEl.style.opacity = '1'; 
-                                    btnEl.innerHTML = "<i class='fas fa-download'></i> Minta Arsip PDF";
-                                }
-                                pesanEl.style.color = "#ff4757";
-                                pesanEl.innerHTML = `<i class='fas fa-times-circle'></i> ${escapeHTML(result.error || 'Terjadi kesalahan sistem')}`;
-                            }
-                        }
-                    } catch (error) {
-                        if (arsipCheckInterval) clearInterval(arsipCheckInterval);
-                        pesanEl.style.color = "#ff4757";
-                        pesanEl.innerHTML = "<i class='fas fa-wifi'></i> Koneksi ke server terputus. Coba lagi nanti.";
-                        if(btnEl) { 
-                            btnEl.disabled = false; 
-                            btnEl.style.opacity = '1'; 
-                            btnEl.innerHTML = "<i class='fas fa-download'></i> Minta Arsip PDF";
-                        }
-                    }
-                },
-                writable: false,
-                configurable: false
-            });
-
-            Object.defineProperty(window, 'toggleItems', {
-                value: function(orderId, hiddenCount) {
-                    const safeOrderId = escapeHTML(String(orderId));
-                    const container = document.getElementById(`hidden-items-${safeOrderId}`);
-                    const btn = document.getElementById(`toggle-btn-${safeOrderId}`);
                     
-                    if(!container || !btn) return;
-
-                    if (container.classList.contains('active')) {
-                        container.classList.remove('active');
-                        btn.innerHTML = `+ ${Number(hiddenCount)} barang lainnya`;
-                    } else {
-                        container.classList.add('active');
-                        btn.innerHTML = `<i class="fas fa-chevron-up"></i> Sembunyikan barang`;
+                    const history = data.history || [];
+                    if(history.length === 0) {
+                         content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-box fa-3x" style="color:var(--text-muted)"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">Kurir belum memperbarui riwayat perjalanan paket ini.</p></div>`;
+                         return;
                     }
-                },
-                writable: false,
-                configurable: false
-            });
-
-            Object.defineProperty(window, 'filterOrders', {
-                value: function(status) {
-                    currentStatusFilter = String(status);
                     
-                    document.querySelectorAll('.tab-btn').forEach(btn => {
-                        if (btn.getAttribute('data-status') === status) btn.classList.add('active');
-                        else btn.classList.remove('active');
-                    });
+                    history.reverse();
                     
-                    const archiveBox = document.getElementById('archiveBoxContainer');
-                    if (archiveBox) {
-                        if (status === 'Selesai' || status === 'Dibatalkan') {
-                            archiveBox.style.display = 'flex';
-                        } else {
-                            archiveBox.style.display = 'none';
-                        }
-                    }
-
-                    renderOrders(currentStatusFilter);
-                },
-                writable: false,
-                configurable: false
-            });
-
-            Object.defineProperty(window, 'trackOrderRealtime', {
-                value: async function(orderId) {
-                    const modal = document.getElementById('trackingModal');
-                    const content = document.getElementById('trackingContent');
-                    
-                    modal.classList.add('active');
-                    content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-satellite-dish fa-spin fa-3x" style="color:var(--accent-color)"></i><p style="margin-top:20px; font-size:13px; font-weight:600; color:var(--text-main);">Menghubungi satelit ekspedisi...</p></div>`;
-                    
-                    try {
-                        const res = await fetch(`${BASE_URL}/api/track/${escapeHTML(orderId)}`);
-                        const data = await res.json();
+                    let timelineHTML = `
+                        <div class="invoice-summary-box">
+                            <div class="inv-row"><span>Kurir:</span><span style="color: var(--text-main); font-weight:700;">${escapeHTML(data.courier?.company || 'KURIR').toUpperCase()}</span></div>
+                            <div class="inv-row"><span>Resi:</span><span style="color: var(--accent-color); font-weight:700; letter-spacing:1px; font-size:14px;">${escapeHTML(data.waybill_id || '')}</span></div>
+                        </div>
+                    `;
                         
-                        if(!res.ok || data.success === false) {
-                            content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-exclamation-triangle fa-3x" style="color:#ff4757"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">${escapeHTML(data.error || 'Data pelacakan belum tersedia dari kurir.')}</p></div>`;
-                            return;
-                        }
+                    if(data.link && data.link !== "") {
+                        timelineHTML += `<a href="${escapeHTML(data.link)}" target="_blank" class="neu-btn" style="margin-bottom:20px; color:#27ae60; border: 1px solid rgba(39, 174, 96, 0.2);"><i class="fas fa-map-marked-alt"></i> Buka Live Map GPS Kurir</a>`;
+                    }
                         
-                        const history = data.history || [];
-                        if(history.length === 0) {
-                             content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-box fa-3x" style="color:var(--text-muted)"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">Kurir belum memperbarui riwayat perjalanan paket ini.</p></div>`;
-                             return;
-                        }
+                    timelineHTML += `<div style="position:relative; padding-left:25px; margin-top:20px;">`;
+                    
+                    history.forEach((hist, index) => {
+                        const dateObj = new Date(hist.updated_at);
+                        const timeStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+                        const isActive = index === 0;
                         
-                        history.reverse();
+                        const dotColor = isActive ? 'var(--accent-color)' : 'var(--shadow-dark)';
+                        const textColor = isActive ? 'var(--text-main)' : 'var(--text-muted)';
+                        const fontWeight = isActive ? '700' : '500';
                         
-                        let timelineHTML = `
-                            <div class="invoice-summary-box">
-                                <div class="inv-row"><span>Kurir:</span><span style="color: var(--text-main); font-weight:700;">${escapeHTML(data.courier?.company || 'KURIR').toUpperCase()}</span></div>
-                                <div class="inv-row"><span>Resi:</span><span style="color: var(--accent-color); font-weight:700; letter-spacing:1px; font-size:14px;">${escapeHTML(data.waybill_id || '')}</span></div>
+                        timelineHTML += `
+                            <div style="position:relative; padding-bottom:25px;">
+                                <div style="position:absolute; left:-25px; top:3px; width:12px; height:12px; border-radius:50%; background:${dotColor}; box-shadow:var(--neu-flat-sm); z-index:2;"></div>
+                                ${index !== history.length - 1 ? `<div style="position:absolute; left:-20px; top:15px; bottom:-3px; width:2px; background:rgba(128,128,128,0.2); z-index:1;"></div>` : ''}
+                                <div style="font-size:11px; color:var(--accent-color); font-weight:700; margin-bottom:4px;">${escapeHTML(timeStr)}</div>
+                                <div style="font-size:12px; color:${textColor}; font-weight:${fontWeight}; line-height:1.5;">${escapeHTML(hist.note)}</div>
                             </div>
                         `;
-                            
-                        if(data.link && data.link !== "") {
-                            timelineHTML += `<a href="${escapeHTML(data.link)}" target="_blank" class="neu-btn" style="margin-bottom:20px; color:#27ae60; border: 1px solid rgba(39, 174, 96, 0.2);"><i class="fas fa-map-marked-alt"></i> Buka Live Map GPS Kurir</a>`;
-                        }
-                            
-                        timelineHTML += `<div style="position:relative; padding-left:25px; margin-top:20px;">`;
-                        
-                        history.forEach((hist, index) => {
-                            const dateObj = new Date(hist.updated_at);
-                            const timeStr = dateObj.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                            const isActive = index === 0;
-                            
-                            const dotColor = isActive ? 'var(--accent-color)' : 'var(--shadow-dark)';
-                            const textColor = isActive ? 'var(--text-main)' : 'var(--text-muted)';
-                            const fontWeight = isActive ? '700' : '500';
-                            
-                            timelineHTML += `
-                                <div style="position:relative; padding-bottom:25px;">
-                                    <div style="position:absolute; left:-25px; top:3px; width:12px; height:12px; border-radius:50%; background:${dotColor}; box-shadow:var(--neu-flat-sm); z-index:2;"></div>
-                                    ${index !== history.length - 1 ? `<div style="position:absolute; left:-20px; top:15px; bottom:-3px; width:2px; background:rgba(128,128,128,0.2); z-index:1;"></div>` : ''}
-                                    <div style="font-size:11px; color:var(--accent-color); font-weight:700; margin-bottom:4px;">${escapeHTML(timeStr)}</div>
-                                    <div style="font-size:12px; color:${textColor}; font-weight:${fontWeight}; line-height:1.5;">${escapeHTML(hist.note)}</div>
-                                </div>
-                            `;
-                        });
-                        
-                        timelineHTML += `</div>`;
-                        content.innerHTML = timelineHTML;
-                        
-                    } catch(e) {
-                        content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-wifi fa-3x" style="color:#ff4757"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">Koneksi terputus. Silakan coba lagi.</p></div>`;
-                    }
-                },
-                writable: false,
-                configurable: false
-            });
+                    });
+                    
+                    timelineHTML += `</div>`;
+                    content.innerHTML = timelineHTML;
+                    
+                } catch(e) {
+                    content.innerHTML = `<div style="text-align:center; padding: 40px;"><i class="fas fa-wifi fa-3x" style="color:#ff4757"></i><p style="margin-top:20px; font-size:13px; color:var(--text-main); font-weight:600;">Koneksi terputus. Silakan coba lagi.</p></div>`;
+                }
+            };
 
             function renderOrders(statusFilter) {
                 const container = document.getElementById('ordersContainer');
@@ -1244,20 +1202,20 @@
                         itemsHTML = `<div class="more-items-text" style="font-size:12px; color:var(--text-muted);">Rincian barang belum dimasukkan.</div>`;
                     }
 
-                    const displayTotal = formatRupiah(order.gross_amount || order.total_price || 0);
+                    // SANITASI MUTLAK: Menghilangkan seluruh karakter aneh dari param onclick untuk cegah Syntax Error di HTML
+                    const safeTotalStr = String(order.gross_amount || order.total_price || 0).replace(/[^0-9\.]/g, '');
+                    const safeMethodStr = String(order.payment_type || '').replace(/[^a-zA-Z0-9_]/g, '');
+                    const cleanOrderId = String(order.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+                    const displayTotal = formatRupiah(safeTotalStr);
 
                     let actionButtonHTML = '';
                     const lowerStatus = rawStatus.toLowerCase();
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
-                        // Meneruskan orderId dan gross_amount
-                        const safeTotal = String(order.gross_amount || order.total_price || 0);
-                        const safeMethod = String(order.payment_type || '');
-                        
                         actionButtonHTML = `
                             <button class="btn-pay-now" 
-                                onclick="window.openPaymentGateway('${safeOrderId}', '${escapeHTML(safeTotal)}', '${escapeHTML(safeMethod)}')">
+                                onclick="window.openPaymentGateway('${cleanOrderId}', '${safeTotalStr}', '${safeMethodStr}')">
                                 <i class="fas fa-wallet"></i> Bayar Sekarang
                             </button>`;
                             
@@ -1272,7 +1230,7 @@
                             actionButtonHTML = `
                             <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
                                 <div style="font-size: 11px; font-weight: 700; color: var(--accent-color); padding: 4px 12px; border-radius: 50px; background: rgba(9, 132, 227, 0.1); border: 1px dashed rgba(9, 132, 227, 0.3);">Resi: ${safeAwb}</div>
-                                <button class="btn-track" onclick="window.trackOrderRealtime('${safeOrderId}')">
+                                <button class="btn-track" onclick="window.trackOrderRealtime('${cleanOrderId}')">
                                     <i class="fas fa-map-marked-alt"></i> Lacak Posisi
                                 </button>
                             </div>`;
@@ -1321,158 +1279,135 @@
             // =========================================================================
             // MENAMPILKAN POP-UP PEMBAYARAN KETIKA "BAYAR SEKARANG" DIKLIK
             // =========================================================================
-            Object.defineProperty(window, 'openPaymentGateway', {
-                value: async function(orderId, totalPrice, paymentMethodStr) {
-                    activePaymentOrderId = String(orderId);
-                    activePaymentTotalText = formatRupiah(totalPrice);
-                    
-                    document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
-                    document.getElementById('textInvoiceTotal').innerText = activePaymentTotalText;
+            window.openPaymentGateway = async function(orderId, totalPrice, paymentMethodStr) {
+                activePaymentOrderId = String(orderId);
+                
+                document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
+                document.getElementById('textInvoiceTotal').innerText = formatRupiah(totalPrice);
 
-                    let rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`);
-                    
-                    if (!rawPayNum) {
-                        const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
-                        if(orderData && orderData.payment_number) {
-                            rawPayNum = orderData.payment_number;
-                        } else {
-                            window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori.", "error");
-                            return;
-                        }
+                let rawPayNum = null;
+                try {
+                    rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`);
+                } catch (e) {
+                    console.warn("Storage restricted");
+                }
+                
+                if (!rawPayNum) {
+                    const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
+                    if(orderData && orderData.payment_number) {
+                        rawPayNum = orderData.payment_number;
+                    } else {
+                        window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori.", "error");
+                        return;
                     }
+                }
 
-                    document.getElementById('popupQrisContainer').style.display = 'none';
-                    document.getElementById('popupVaContainer').style.display = 'none';
-                    document.getElementById('paymentTutorialModal').classList.add('active');
+                document.getElementById('popupQrisContainer').style.display = 'none';
+                document.getElementById('popupVaContainer').style.display = 'none';
+                document.getElementById('paymentTutorialModal').classList.add('active');
 
-                    try {
-                        const lowerMethod = String(paymentMethodStr).toLowerCase();
+                try {
+                    const lowerMethod = String(paymentMethodStr).toLowerCase();
+                    
+                    if (lowerMethod === 'qris' || lowerMethod.includes('wallet')) {
+                        document.getElementById('popupVaContainer').style.display = 'none';
+                        document.getElementById('popupQrisContainer').style.display = 'flex';
+                        document.getElementById('qrcodeBox').innerHTML = ""; 
                         
-                        if (lowerMethod === 'qris' || lowerMethod.includes('wallet')) {
-                            document.getElementById('popupVaContainer').style.display = 'none';
-                            document.getElementById('popupQrisContainer').style.display = 'flex';
-                            document.getElementById('qrcodeBox').innerHTML = ""; 
-                            
-                            new QRCode(document.getElementById("qrcodeBox"), {
-                                text: String(rawPayNum), 
-                                width: 180, height: 180,
-                                colorDark : "#000000", colorLight : "#ffffff",
-                                correctLevel : QRCode.CorrectLevel.M
-                            });
-                        } else {
-                            document.getElementById('popupQrisContainer').style.display = 'none';
-                            document.getElementById('popupVaContainer').style.display = 'flex';
-                            document.getElementById('popupVaLabel').innerText = "Nomor Virtual Account";
-                            document.getElementById('popupVaNumber').innerText = escapeHTML(String(rawPayNum));
-                        }
-                    } catch (e) {
-                        window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
+                        new QRCode(document.getElementById("qrcodeBox"), {
+                            text: String(rawPayNum), 
+                            width: 180, height: 180,
+                            colorDark : "#000000", colorLight : "#ffffff",
+                            correctLevel : QRCode.CorrectLevel.M
+                        });
+                    } else {
+                        document.getElementById('popupQrisContainer').style.display = 'none';
+                        document.getElementById('popupVaContainer').style.display = 'flex';
+                        document.getElementById('popupVaLabel').innerText = "Nomor Virtual Account";
+                        document.getElementById('popupVaNumber').innerText = escapeHTML(String(rawPayNum));
                     }
-                },
-                writable: false,
-                configurable: false
-            });
+                } catch (e) {
+                    window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
+                }
+            };
 
-            Object.defineProperty(window, 'closePaymentTutorial', {
-                value: function() {
-                    document.getElementById('paymentTutorialModal').classList.remove('active');
-                },
-                writable: false,
-                configurable: false
-            });
+            window.closePaymentTutorial = function() {
+                document.getElementById('paymentTutorialModal').classList.remove('active');
+            };
 
             // =========================================================================
             // ALUR GANTI METODE PEMBAYARAN HEADLESS (MENEMBAK RUST BACKEND)
             // =========================================================================
             
-            // 1. Membuka Modal Pilihan Bank/E-Wallet
-            Object.defineProperty(window, 'openPaymentSelectionModal', {
-                value: function() {
-                    if(!activePaymentOrderId) return;
-                    document.getElementById('paymentTutorialModal').classList.remove('active');
-                    document.getElementById('paymentSelectionModal').classList.add('active');
-                },
-                writable: false,
-                configurable: false
-            });
+            window.openPaymentSelectionModal = function() {
+                if(!activePaymentOrderId) return;
+                document.getElementById('paymentTutorialModal').classList.remove('active');
+                document.getElementById('paymentSelectionModal').classList.add('active');
+            };
 
-            // 2. Menutup Modal Pilihan Bank
-            Object.defineProperty(window, 'closePaymentSelectionModal', {
-                value: function() {
-                    document.getElementById('paymentSelectionModal').classList.remove('active');
-                },
-                writable: false,
-                configurable: false
-            });
+            window.closePaymentSelectionModal = function() {
+                document.getElementById('paymentSelectionModal').classList.remove('active');
+            };
 
-            // 3. Mengeksekusi API Backend saat Bank dipilih
-            Object.defineProperty(window, 'executeChangePayment', {
-                value: async function(newMethodId) {
-                    if (isChangingPayment || !activePaymentOrderId) return;
-                    
-                    isChangingPayment = true;
-                    window.closePaymentSelectionModal();
-                    
-                    // Memunculkan loading sementara
-                    document.getElementById('ordersContainer').innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--accent-color); margin-bottom: 20px;"></i>
-                            <div class="empty-text">Sedang Menghubungi Bank...</div>
-                            <div class="empty-subtext">Mohon jangan tutup halaman ini.</div>
-                        </div>
-                    `;
+            window.executeChangePayment = async function(newMethodId) {
+                if (isChangingPayment || !activePaymentOrderId) return;
+                
+                isChangingPayment = true;
+                window.closePaymentSelectionModal();
+                
+                document.getElementById('ordersContainer').innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-spinner fa-spin fa-3x" style="color: var(--accent-color); margin-bottom: 20px;"></i>
+                        <div class="empty-text">Sedang Menghubungi Bank...</div>
+                        <div class="empty-subtext">Mohon jangan tutup halaman ini.</div>
+                    </div>
+                `;
+
+                try {
+                    const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({
+                            order_id: activePaymentOrderId,
+                            new_payment_method: String(newMethodId)
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.error || "Gagal mengubah metode pembayaran");
+                    }
 
                     try {
-                        const res = await fetch(`${BASE_URL}/api/orders/change-payment`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${session.access_token}`
-                            },
-                            body: JSON.stringify({
-                                order_id: activePaymentOrderId,
-                                new_payment_method: String(newMethodId)
-                            })
-                        });
-
-                        const data = await res.json();
-
-                        if (!res.ok) {
-                            throw new Error(data.error || "Gagal mengubah metode pembayaran");
-                        }
-
-                        // Mengubah nomor memori lokal sesuai yang baru
                         localStorage.setItem(`paynum_${activePaymentOrderId}`, data.payment_number);
-                        
-                        // Me-*refresh* kerangka data pesanan lokal
-                        const orderIndex = allOrders.findIndex(o => String(o.id) === activePaymentOrderId);
-                        if(orderIndex !== -1) {
-                            allOrders[orderIndex].payment_type = newMethodId;
-                            allOrders[orderIndex].payment_number = data.payment_number;
-                            allOrders[orderIndex].gross_amount = data.new_total;
-                            // Update cache
-                            setLocalCache('bakoel_orders_history', allOrders, 5 * 60 * 1000);
-                        }
-
-                        // Memuat ulang UI dan langsung membuka pop-up dengan nomor yang baru
-                        renderOrders(currentStatusFilter);
-                        window.showNotification("Berhasil", "Metode pembayaran telah diganti. Silakan lakukan pembayaran.", "success");
-                        
-                        // Menunggu notifikasi tertutup sebelum buka pop-up baru
-                        setTimeout(() => {
-                            window.openPaymentGateway(activePaymentOrderId, data.new_total, newMethodId);
-                        }, 2000);
-
-                    } catch(e) {
-                        window.showNotification("Gagal", escapeHTML(e.message), "error");
-                        renderOrders(currentStatusFilter); // Kembalikan UI seperti semula
-                    } finally {
-                        isChangingPayment = false;
+                    } catch (e) {}
+                    
+                    const orderIndex = allOrders.findIndex(o => String(o.id) === activePaymentOrderId);
+                    if(orderIndex !== -1) {
+                        allOrders[orderIndex].payment_type = newMethodId;
+                        allOrders[orderIndex].payment_number = data.payment_number;
+                        allOrders[orderIndex].gross_amount = data.new_total;
+                        setLocalCache('bakoel_orders_history', allOrders, 5 * 60 * 1000);
                     }
-                },
-                writable: false,
-                configurable: false
-            });
+
+                    renderOrders(currentStatusFilter);
+                    window.showNotification("Berhasil", "Metode pembayaran telah diganti. Silakan lakukan pembayaran.", "success");
+                    
+                    setTimeout(() => {
+                        window.openPaymentGateway(activePaymentOrderId, data.new_total, newMethodId);
+                    }, 2000);
+
+                } catch(e) {
+                    window.showNotification("Gagal", escapeHTML(e.message), "error");
+                    renderOrders(currentStatusFilter); 
+                } finally {
+                    isChangingPayment = false;
+                }
+            };
 
             document.addEventListener('DOMContentLoaded', () => {
                 loadFooterData();
