@@ -11,7 +11,6 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     
-    <!-- SECURITY PATCH: Menambahkan cdnjs.cloudflare.com untuk library QRCode lokal. -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
@@ -455,7 +454,8 @@
                 <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
                     <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
-                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px;">-</span>
+                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px; word-break: break-all;">-</span>
+                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
                     </div>
                     <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Pastikan nominal transfer sesuai agar otomatis terverifikasi oleh sistem.</p>
                 </div>
@@ -592,6 +592,20 @@
                 configurable: false
             });
             
+            // Mendaftarkan Fungsi Copy VA dengan Aman
+            Object.defineProperty(window, 'copyToClipboard', {
+                value: function(elementId) {
+                    const text = document.getElementById(elementId).innerText;
+                    navigator.clipboard.writeText(text).then(() => { 
+                        window.showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); 
+                    }).catch(err => { 
+                        window.showNotification("Gagal", "Gagal menyalin nomor.", "error"); 
+                    });
+                }, 
+                writable: false, 
+                configurable: false
+            });
+
             function handleLogout() {
                 localStorage.removeItem('user_session'); 
                 window.showNotification("Sesi Berakhir", "Tiket login Anda telah kedaluwarsa. Silakan login kembali.", "warning", "login.html");
@@ -1155,7 +1169,7 @@
                     const safeAwb = escapeHTML(order.awb_number || '');
                     
                     if (lowerStatus === 'menunggu pembayaran' || lowerStatus === 'pending') {
-                        // Mengirim orderId dan gross_amount
+                        // Mengirim orderId, gross_amount, dan payment_type
                         const safeTotal = String(order.gross_amount || order.total_price || 0);
                         const safeMethod = String(order.payment_type || '');
                         
@@ -1233,15 +1247,20 @@
                     document.getElementById('textInvoiceId').innerText = `INV-${activePaymentOrderId.split('-')[0].toUpperCase()}`;
                     document.getElementById('textInvoiceTotal').innerText = activePaymentTotalText;
 
-                    // Mencari URL Token yang tersimpan di lokal Storage 
-                    let savedUrl = localStorage.getItem(`token_${activePaymentOrderId}`);
+                    // Mengambil nomor pembayaran raw dari local storage (disimpan saat checkout di keranjang.html)
+                    let rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`);
                     
-                    if (!savedUrl || !savedUrl.startsWith("http")) {
-                        window.showNotification("Gagal", "Link pembayaran tidak ditemukan di memori.", "error");
-                        return;
+                    // Fallback apabila Local Storage dihapus
+                    if (!rawPayNum) {
+                        const orderData = allOrders.find(o => String(o.id) === activePaymentOrderId);
+                        if(orderData && orderData.payment_number) {
+                            rawPayNum = orderData.payment_number;
+                        } else {
+                            window.showNotification("Gagal", "Kode pembayaran tidak ditemukan di memori. Sistem aplikasi/E-Wallet Anda mungkin sudah menyimpan notifikasi tagihan ini, atau silakan buat pesanan baru.", "error");
+                            return;
+                        }
                     }
 
-                    // Tampilkan Loading state pada pop-up
                     document.getElementById('popupQrisContainer').style.display = 'none';
                     document.getElementById('popupVaContainer').style.display = 'none';
                     document.getElementById('paymentTutorialModal').classList.add('active');
@@ -1249,21 +1268,23 @@
                     try {
                         const lowerMethod = String(paymentMethodStr).toLowerCase();
                         
-                        if (lowerMethod.includes("qris") || lowerMethod.includes("wallet")) {
+                        // Validasi Apakah QRIS atau Nomor Virtual Account
+                        if (lowerMethod === 'qris' || lowerMethod.includes('wallet')) {
                             document.getElementById('popupVaContainer').style.display = 'none';
                             document.getElementById('popupQrisContainer').style.display = 'flex';
+                            document.getElementById('qrcodeBox').innerHTML = ""; 
                             
-                            // Amankan rendering URL ke dalam tag a href
-                            const safeAhref = escapeHTML(savedUrl);
-                            document.getElementById('qrcodeBox').innerHTML = `<a href="${safeAhref}" target="_blank" style="text-decoration:none; display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;"><i class="fas fa-qrcode fa-3x" style="color:var(--accent-color); margin-bottom:10px;"></i><span style="font-size:12px; font-weight:bold; color:var(--text-main);">Klik untuk melihat<br>QRIS Code</span></a>`;
+                            new QRCode(document.getElementById("qrcodeBox"), {
+                                text: String(rawPayNum), 
+                                width: 180, height: 180,
+                                colorDark : "#000000", colorLight : "#ffffff",
+                                correctLevel : QRCode.CorrectLevel.M
+                            });
                         } else {
                             document.getElementById('popupQrisContainer').style.display = 'none';
                             document.getElementById('popupVaContainer').style.display = 'flex';
-                            document.getElementById('popupVaLabel').innerText = "Link Virtual Account";
-                            
-                            const safeAhref = escapeHTML(savedUrl);
-                            document.getElementById('popupVaNumber').innerText = "Buka Link Bayar";
-                            document.getElementById('popupVaNumber').innerHTML = `<a href="${safeAhref}" target="_blank" style="color:var(--accent-color); text-decoration:none;">Buka Link Bayar <i class="fas fa-external-link-alt"></i></a>`;
+                            document.getElementById('popupVaLabel').innerText = "Nomor Virtual Account";
+                            document.getElementById('popupVaNumber').innerText = escapeHTML(String(rawPayNum));
                         }
                     } catch (e) {
                         window.showNotification("Kesalahan", "Gagal memuat rincian pembayaran.", "error");
@@ -1281,17 +1302,12 @@
                 configurable: false
             });
 
-            // FUNGSI GANTI METODE PEMBAYARAN VIA PAKASIR
+            // =========================================================================
+            // FUNGSI GANTI METODE PEMBAYARAN VIA PAKASIR HEADLESS
+            // =========================================================================
             Object.defineProperty(window, 'changePaymentMethodPakasir', {
                 value: function() {
-                    let savedUrl = localStorage.getItem(`token_${activePaymentOrderId}`);
-                    if (savedUrl && savedUrl.startsWith("https://app.pakasir.com/")) {
-                        // Menghapus parameter '&qris_only=1' jika ada, agar pengguna bisa mengganti metode di portal Pakasir
-                        let changeUrl = savedUrl.replace('&qris_only=1', '').replace('?qris_only=1', '');
-                        window.open(changeUrl, '_blank');
-                    } else {
-                        window.showNotification("Gagal", "Gagal membuka menu metode pembayaran.", "error");
-                    }
+                    window.showNotification("Informasi", "Untuk mengganti metode pembayaran yang sudah terkunci oleh sistem, silakan <b>Batalkan</b> pesanan ini terlebih dahulu lalu buat ulang pesanan di keranjang.", "warning");
                 },
                 writable: false,
                 configurable: false
