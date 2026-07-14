@@ -583,18 +583,63 @@
             }
 
             async function syncBadges(token) {
-                const cachedCart = getLocalCache('bakoel_cart_qty');
-                if (cachedCart === null) {
+                // 1. Perisai Keranjang (Tampil walau dari cache)
+                let cartQty = getLocalCache('bakoel_cart_qty');
+                if (cartQty === null) {
                     try {
                         const cartRes = await fetch(`${BASE_URL}/api/cart`, { headers: { 'Authorization': `Bearer ${token}` } });
                         if (cartRes.ok) {
                             const items = await cartRes.json();
-                            const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
-                            setLocalCache('bakoel_cart_qty', totalQty, 10 * 60 * 1000);
-                            const badge = document.getElementById('cartBadge');
-                            if(badge) { badge.style.display = totalQty > 0 ? 'flex' : 'none'; badge.innerText = totalQty > 99 ? '99+' : totalQty; }
+                            cartQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
+                            setLocalCache('bakoel_cart_qty', cartQty, 10 * 60 * 1000);
                         }
                     } catch (e) {}
+                }
+                if (cartQty !== null) {
+                    const badgeText = cartQty > 99 ? '99+' : cartQty;
+                    const cBadge = document.getElementById('cartBadge');
+                    const mcBadge = document.getElementById('mobileCartBadge');
+                    if (cBadge) { cBadge.style.display = cartQty > 0 ? 'flex' : 'none'; cBadge.innerText = badgeText; }
+                    if (mcBadge) { mcBadge.style.display = cartQty > 0 ? 'flex' : 'none'; mcBadge.innerText = badgeText; }
+                }
+
+                // 2. Perisai Voucher
+                let promoQty = getLocalCache('bakoel_promo_qty');
+                if (promoQty === null) {
+                    try {
+                        const promoRes = await fetch(`${BASE_URL}/api/vouchers`, { headers: { 'Authorization': `Bearer ${token}` } });
+                        if (promoRes.ok) {
+                            const promos = await promoRes.json();
+                            promoQty = promos.length;
+                            setLocalCache('bakoel_promo_qty', promoQty, 30 * 60 * 1000);
+                        }
+                    } catch (e) {}
+                }
+                if (promoQty !== null) {
+                    const pBadge = document.getElementById('promoBadge');
+                    const mpBadge = document.getElementById('mobilePromoBadge');
+                    if(pBadge) { pBadge.style.display = promoQty > 0 ? 'flex' : 'none'; pBadge.innerText = promoQty; }
+                    if(mpBadge) { mpBadge.style.display = promoQty > 0 ? 'flex' : 'none'; mpBadge.innerText = promoQty; }
+                }
+
+                // 3. Perisai Pesanan Aktif
+                let orderQty = getLocalCache('bakoel_order_qty');
+                if (orderQty === null) {
+                    try {
+                        const orderRes = await fetch(`${BASE_URL}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
+                        if (orderRes.ok) {
+                            const orders = await orderRes.json();
+                            const activeOrders = orders.filter(o => o.status !== 'Selesai' && o.status !== 'Dibatalkan');
+                            orderQty = activeOrders.length;
+                            setLocalCache('bakoel_order_qty', orderQty, 5 * 60 * 1000);
+                        }
+                    } catch (e) {}
+                }
+                if (orderQty !== null) {
+                    const oBadge = document.getElementById('orderBadge');
+                    const moBadge = document.getElementById('mobileOrderBadge');
+                    if(oBadge) { oBadge.style.display = orderQty > 0 ? 'flex' : 'none'; oBadge.innerText = orderQty; }
+                    if(moBadge) { moBadge.style.display = orderQty > 0 ? 'flex' : 'none'; moBadge.innerText = orderQty; }
                 }
             }
 
@@ -614,6 +659,13 @@
                     container.innerHTML = `<div class="empty-cart"><i class="fas fa-box-open fa-3x"></i><br><br>Keranjang kosong.<br><a href="index.html" style="color:var(--accent-color); text-decoration:none;">Belanja Sekarang</a></div>`;
                     document.getElementById('totalPriceDisplay').innerText = "Rp 0"; document.getElementById('costBreakdown').style.display = 'none';
                     const btnCheckout = document.getElementById('checkoutBtn'); if(btnCheckout) { btnCheckout.disabled = true; btnCheckout.innerHTML = 'Buat Pesanan'; }
+                    
+                    // Reset UI Badge Jika Kosong
+                    const cartBadge = document.getElementById('cartBadge');
+                    const mobileCartBadge = document.getElementById('mobileCartBadge');
+                    if(cartBadge) cartBadge.style.display = 'none';
+                    if(mobileCartBadge) mobileCartBadge.style.display = 'none';
+                    try { localStorage.setItem('bakoel_cart_qty', JSON.stringify({ data: 0, expiry: Date.now() + CACHE_TTL })); } catch(e){}
                     return;
                 }
 
@@ -646,6 +698,13 @@
 
                 container.innerHTML = ''; container.appendChild(fragment); rawSubtotal = total;
                 try { localStorage.setItem('bakoel_cart_qty', JSON.stringify({ data: currentCartTotalQty, expiry: Date.now() + CACHE_TTL })); } catch(e){}
+
+                // Update UI Badge Keranjang secara Realtime
+                const badgeText = currentCartTotalQty > 99 ? '99+' : currentCartTotalQty;
+                const cBadge = document.getElementById('cartBadge');
+                const mcBadge = document.getElementById('mobileCartBadge');
+                if (cBadge) { cBadge.style.display = currentCartTotalQty > 0 ? 'flex' : 'none'; cBadge.innerText = badgeText; }
+                if (mcBadge) { mcBadge.style.display = currentCartTotalQty > 0 ? 'flex' : 'none'; mcBadge.innerText = badgeText; }
 
                 if(activeVouchers.length > 0) { syncPromosAndApply(); } else { applyPromoMath(); }
 
