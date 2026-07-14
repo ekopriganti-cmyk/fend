@@ -11,12 +11,13 @@
     <meta http-equiv="Strict-Transport-Security" content="max-age=31536000; includeSubDomains">
     <meta http-equiv="Cross-Origin-Opener-Policy" content="same-origin">
     
-    <!-- SECURITY PATCH: Menghapus app.sandbox.midtrans.com untuk mencegah Client-Side Supply Chain Attack (#6) -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
+    <!-- SECURITY PATCH: Menambahkan cdnjs.cloudflare.com untuk script QR Code aman. Bebas Midtrans. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' https://*.onrender.com https://api.dicebear.com https://api.biteship.com https://nominatim.openstreetmap.org; img-src 'self' data: https: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com https://cdnjs.cloudflare.com https://www.googletagmanager.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://cdnjs.cloudflare.com https://fonts.gstatic.com; frame-src 'self';">
 
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" referrerpolicy="no-referrer" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecJQxFIb53auzZAHuH2n4WhAfrwD1xS57ZvHn1R-k4D1XhO1y2q/U0g/U..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -195,25 +196,10 @@
         <a href="index.html" class="logo"><i class="fas fa-box-open"></i>BAKOEL</a>
         <div class="controls">
             <div class="theme-switch" id="themeToggle"><div class="switch-handle"><i class="fas fa-sun" id="switchIcon"></i></div></div>
-            
-            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo">
-                <i class="fas fa-tags"></i>
-                <span class="badge-count" id="promoBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan">
-                <i class="fas fa-box"></i>
-                <span class="badge-count" id="orderBadge" style="display: none;">0</span>
-            </a>
-            
-            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang">
-                <i class="fas fa-shopping-cart"></i>
-                <span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span>
-            </a>
-            
-            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn">
-                <i class="fas fa-sign-in-alt"></i> <span>Login</span>
-            </a>
+            <a href="promo.html" class="nav-link hide-on-mobile" title="Promo"><i class="fas fa-tags"></i><span class="badge-count" id="promoBadge" style="display: none;">0</span></a>
+            <a href="pesanan.html" class="nav-link hide-on-mobile" title="Pesanan"><i class="fas fa-box"></i><span class="badge-count" id="orderBadge" style="display: none;">0</span></a>
+            <a href="keranjang.html" class="neu-btn-icon hide-on-mobile" style="box-shadow: var(--neu-pressed-sm); color: var(--accent-color);" title="Keranjang"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="cartBadge" style="display: none; top: -5px; right: -5px;">0</span></a>
+            <a href="login.html" class="nav-btn-cap hide-on-mobile" id="navLoginBtn"><i class="fas fa-sign-in-alt"></i> <span>Login</span></a>
         </div>
     </div>
 
@@ -276,18 +262,57 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL CUSTOM POP-UP PEMBAYARAN PAKASIR     -->
+    <!-- ========================================== -->
+    <div class="modal-overlay" id="customPaymentPopupModal">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 25px 20px;">
+            <div class="modal-header" style="justify-content: center; margin-bottom: 10px;">
+                <div class="modal-title-box"><h2 style="color: var(--text-main); font-size: 20px;"><i class="fas fa-check-circle" style="color: #27ae60;"></i> Pesanan Dibuat</h2></div>
+            </div>
+            <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 20px; font-weight: 600;">Selesaikan pembayaran Anda sekarang</p>
+            
+            <div style="background: var(--bg-color); border-radius: 15px; padding: 20px; box-shadow: var(--neu-pressed-sm); margin-bottom: 20px;">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase;">Total Tagihan</div>
+                <div style="font-size: 26px; font-weight: 700; color: var(--accent-color); margin-bottom: 20px; letter-spacing: -0.5px;" id="popupTotalAmount">Rp 0</div>
+                
+                <!-- QRIS Container -->
+                <div id="popupQrisContainer" style="display: none; flex-direction: column; align-items: center;">
+                    <div style="background: white; padding: 12px; border-radius: 12px; display: inline-block; margin-bottom: 15px; box-shadow: var(--neu-flat-sm);">
+                        <div id="qrcodeBox" style="width: 180px; height: 180px;"></div>
+                    </div>
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" style="height: 18px;" alt="QRIS" draggable="false">
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; font-weight: 500;">Buka aplikasi e-Wallet atau m-Banking Anda, lalu scan QR Code di atas.</p>
+                </div>
+
+                <!-- VA Container -->
+                <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
+                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Nomor Virtual Account</div>
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
+                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px;">-</span>
+                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Salin dan transfer tepat sesuai nominal agar otomatis terverifikasi oleh sistem.</p>
+                </div>
+            </div>
+            
+            <button class="neu-btn" onclick="window.location.href='pesanan.html'" style="background: var(--accent-color); color: white; border: 2px solid rgba(255,255,255,0.2);">Saya Sudah Bayar</button>
+        </div>
+    </div>
+
+    <!-- Modal Alamat -->
     <div class="modal-overlay" id="addressModal">
         <div class="modal-content" style="max-width: 350px;">
             <div class="modal-header">
                 <div class="modal-title-box"><h2><i class="fas fa-map-marker-alt"></i> Titik Pengiriman</h2></div>
                 <button class="modal-close" onclick="window.closeAddressModal()"><i class="fas fa-times"></i></button>
             </div>
-            
             <div style="overflow-y: auto; flex-grow: 1; padding-right: 5px; margin-bottom: 15px;">
                 <div style="margin-bottom: 20px;">
                     <span class="input-label">Geser Pin ke Lokasi Pasti</span>
                     <div id="mapPicker" style="height: 180px; border-radius: 15px; z-index: 1; box-shadow: var(--neu-pressed-sm); margin-bottom: 12px;"></div>
-                    
                     <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px;">
                         <div id="mapStatus" style="font-size: 10px; color: var(--text-muted); font-weight: 600; line-height: 1.3;">Geser pin merah ke<br>atas rumah Anda</div>
                         <button type="button" onclick="window.autoGetLocation()" class="neu-btn" style="padding: 8px 12px; font-size: 11px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
@@ -295,17 +320,16 @@
                         </button>
                     </div>
                 </div>
-
                 <div class="input-group"><span class="input-label">Nama Penerima</span><input type="text" id="modalShipName" class="neu-input" placeholder="Budi Santoso" maxlength="100" spellcheck="false"></div>
                 <div class="input-group"><span class="input-label">Nomor WhatsApp</span><input type="tel" id="modalShipPhone" class="neu-input" placeholder="08123456789" maxlength="20"></div>
                 <div class="input-group"><span class="input-label">Kode Pos (Otomatis/Manual)</span><input type="text" id="modalShipZip" class="neu-input" placeholder="29432" inputmode="numeric" pattern="[0-9]*" maxlength="10"></div>
                 <div class="input-group"><span class="input-label">Detail Alamat (Patokan)</span><textarea id="modalShipAddress" class="neu-input" rows="2" placeholder="Contoh: Pagar hitam depan masjid..." maxlength="500" spellcheck="false"></textarea></div>
             </div>
-            
             <button class="btn-checkout" onclick="window.saveAddressInfo()" style="flex-shrink: 0;">Simpan & Pilih Kurir</button>
         </div>
     </div>
 
+    <!-- Modal Kurir -->
     <div class="modal-overlay" id="shippingModal">
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header"><div class="modal-title-box"><h2><i class="fas fa-truck-loading"></i> Pilih Kurir</h2></div><button class="modal-close" onclick="window.closeShippingModal()"><i class="fas fa-times"></i></button></div>
@@ -315,97 +339,71 @@
         </div>
     </div>
 
+    <!-- ========================================== -->
+    <!-- MODAL PEMBAYARAN SESUAI KETETAPAN PAKASIR  -->
+    <!-- ========================================== -->
     <div class="modal-overlay" id="paymentModal">
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header"><div class="modal-title-box"><h2><i class="fas fa-wallet"></i> Metode Bayar</h2></div><button class="modal-close" onclick="window.closePaymentModal()"><i class="fas fa-times"></i></button></div>
             
             <div style="overflow-y: auto; flex-grow: 1; max-height: 60vh; padding-right: 5px;">
                 
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">E-Wallet & QRIS (Biaya 0.7%)</div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('qris', 0.007, 0, 'QRIS / Semua E-Wallet')">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase;">QRIS / E-Wallet</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('qris', 'QRIS / Semua E-Wallet')">
                     <div class="promo-pill-info">
                         <span class="promo-pill-code pay-logo-wrapper">
                             <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" class="pay-logo-img" alt="QRIS" draggable="false"> QRIS / E-Wallet
                         </span>
+                        <div class="promo-pill-desc">Biaya: 0.7% + Rp 310 (Atau 1%)</div>
                     </div>
                 </div>
                 
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Virtual Account (Biaya Rp 4.000)</div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bca_va', 0, 4000, 'BCA Virtual Account')">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Virtual Account (Biaya Rp 3.500)</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bri_va', 'BRI Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" class="pay-logo-img" alt="BCA" draggable="false"> BCA Virtual Account
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" class="pay-logo-img" alt="BRI" draggable="false"> BRI Virtual Account</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bni_va', 0, 4000, 'BNI Virtual Account')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bni_va', 'BNI Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" class="pay-logo-img" alt="BNI" draggable="false"> BNI Virtual Account
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" class="pay-logo-img" alt="BNI" draggable="false"> BNI Virtual Account</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('mandiri_va', 0, 4000, 'Mandiri Virtual Account')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('atm_bersama_va', 'ATM Bersama')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_of_Bank_Mandiri.svg" class="pay-logo-img" alt="Mandiri" draggable="false"> Mandiri Virtual Account
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/ATM_Bersama_logo.svg" class="pay-logo-img" alt="ATM Bersama" draggable="false"> ATM Bersama VA</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bri_va', 0, 4000, 'BRI Virtual Account')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('bnc_va', 'BNC Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" class="pay-logo-img" alt="BRI" draggable="false"> BRI Virtual Account
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> BNC VA</span>
                     </div>
                 </div>
-                
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Minimarket (Biaya Rp 5.000)</div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('alfamart', 0, 5000, 'Alfamart')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('cimb_niaga_va', 'CIMB Niaga Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Alfamart_logo.svg" class="pay-logo-img" alt="Alfamart" draggable="false"> Alfamart
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/3/38/CIMB_Niaga_logo.svg" class="pay-logo-img" alt="CIMB" draggable="false"> CIMB Niaga VA</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('indomaret', 0, 5000, 'Indomaret')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('maybank_va', 'Maybank Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/9/9d/Logo_Indomaret.png" class="pay-logo-img" alt="Indomaret" draggable="false"> Indomaret
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Maybank VA</span>
+                    </div>
+                </div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('permata_va', 'Permata Virtual Account')">
+                    <div class="promo-pill-info">
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Permata VA</span>
                     </div>
                 </div>
                 
-                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Kartu Kredit & Cicilan</div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('credit_card', 0.029, 2000, 'Kartu Kredit / Debit')">
+                <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin: 20px 0 10px; text-transform: uppercase;">Virtual Account (Biaya Rp 2.000)</div>
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('artha_graha_va', 'Artha Graha Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" class="pay-logo-img" style="height: 12px;" alt="Visa" draggable="false">
-                            <img src="https://upload.wikimedia.org/wikipedia/commons/a/a4/Mastercard_2019_logo.svg" class="pay-logo-img" style="height: 16px;" alt="Mastercard" draggable="false"> 
-                            Kartu Kredit (2.9% + Rp 2.000)
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Artha Graha VA</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('akulaku', 0.017, 0, 'Akulaku PayLater')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('sampoerna_va', 'Sampoerna Virtual Account')">
                     <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <svg viewBox="0 0 100 24" class="pay-logo-img" style="width: 60px; height: 16px;" xmlns="http://www.w3.org/2000/svg">
-                                <text x="0" y="20" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-style="italic" font-size="24" fill="#E42528" letter-spacing="-1">akulaku</text>
-                            </svg>
-                            Akulaku PayLater (1.7%)
-                        </span>
-                    </div>
-                </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('kredivo', 0.02, 0, 'Kredivo')">
-                    <div class="promo-pill-info">
-                        <span class="promo-pill-code pay-logo-wrapper">
-                            <svg viewBox="0 0 100 24" class="pay-logo-img" style="width: 60px; height: 16px;" xmlns="http://www.w3.org/2000/svg">
-                                <text x="0" y="20" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="24" fill="#00A5CF" letter-spacing="-1">kredi</text>
-                                <text x="59" y="20" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="24" fill="#F47B20" letter-spacing="-1">v</text>
-                                <text x="73" y="20" font-family="Arial, Helvetica, sans-serif" font-weight="900" font-size="24" fill="#00A5CF" letter-spacing="-1">o</text>
-                            </svg>
-                            Kredivo (2%)
-                        </span>
+                        <span class="promo-pill-code pay-logo-wrapper"><i class="fas fa-university" style="color: #636e72;"></i> Sampoerna VA</span>
                     </div>
                 </div>
 
@@ -413,19 +411,18 @@
         </div>
     </div>
 
+    <!-- Modal Promo -->
     <div class="modal-overlay" id="promoModal">
         <div class="modal-content" style="max-width: 400px;">
             <div class="modal-header"><div class="modal-title-box"><h2><i class="fas fa-ticket-alt"></i> Pilih Promo</h2></div><button class="modal-close" onclick="window.closePromoModal()"><i class="fas fa-times"></i></button></div>
             <div style="display: flex; gap: 10px; margin-bottom: 15px;"><input type="text" id="manualVoucherInput" class="neu-input" placeholder="Kode promo..." style="text-transform: uppercase;" spellcheck="false"><button class="neu-btn" onclick="window.applyVoucherManual()" id="btnApplyManual">Pakai</button></div>
             <div id="modalVoucherMsg" style="font-size: 11px; margin-bottom: 12px; font-weight: 600; text-align: center; color: #ff4757;"></div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;"><span style="font-size: 11px; font-weight: 700; color: var(--text-muted);">Tersedia:</span><button onclick="window.resetVoucher()" style="background:none; border:none; color:#ff4757; font-size:10px; font-weight:bold; cursor:pointer;">Reset Filter</button></div>
-            
-            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer">
-                <div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div>
-            </div>
+            <div style="overflow-y: auto; flex-grow: 1;" id="availablePromosContainer"><div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div></div>
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Hapus -->
     <div class="modal-overlay" id="confirmDeleteModal">
         <div class="modal-content" style="max-width: 320px; text-align: center;">
             <div class="modal-header" style="justify-content: center;"><div class="modal-title-box"><h2 style="color: #ff4757;"><i class="fas fa-trash-alt"></i> Hapus Barang</h2></div></div>
@@ -434,6 +431,7 @@
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Checkout -->
     <div class="modal-overlay" id="confirmCheckoutModal">
         <div class="modal-content" style="max-width: 320px; text-align: center;">
             <div class="modal-header" style="justify-content: center;"><div class="modal-title-box"><h2 style="color: var(--accent-color);"><i class="fas fa-check-circle"></i> Konfirmasi</h2></div></div>
@@ -443,6 +441,7 @@
         </div>
     </div>
 
+    <!-- Modal Notifikasi -->
     <div class="modal-overlay" id="notificationModal">
         <div class="modal-content" style="max-width: 320px; text-align: center; align-items: center; padding: 30px 20px;">
             <div id="notifIcon" style="font-size: 45px; margin-bottom: 15px; display: flex; justify-content: center; width: 100%;"></div>
@@ -453,27 +452,17 @@
     </div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="bottom-nav-item">
-            <i class="fas fa-home"></i><span>Beranda</span>
-        </a>
-        <a href="promo.html" class="bottom-nav-item">
-            <div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span>
-        </a>
-        <a href="keranjang.html" class="bottom-nav-item active">
-            <div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span>
-        </a>
-        <a href="pesanan.html" class="bottom-nav-item">
-            <div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span>
-        </a>
-        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn">
-            <i class="fas fa-user"></i><span>Akun</span>
-        </a>
+        <a href="index.html" class="bottom-nav-item"><i class="fas fa-home"></i><span>Beranda</span></a>
+        <a href="promo.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-tags"></i><span class="badge-count" id="mobilePromoBadge" style="display: none;">0</span></div><span>Promo</span></a>
+        <a href="keranjang.html" class="bottom-nav-item active"><div class="badge-container"><i class="fas fa-shopping-cart"></i><span class="badge-count" id="mobileCartBadge" style="display: none;">0</span></div><span>Keranjang</span></a>
+        <a href="pesanan.html" class="bottom-nav-item"><div class="badge-container"><i class="fas fa-box"></i><span class="badge-count" id="mobileOrderBadge" style="display: none;">0</span></div><span>Pesanan</span></a>
+        <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
     </nav>
 
     <script>
         // =========================================================================
         // SECURITY PATCH: KUNCI LINGKUNGAN JAVASCRIPT & SANITASI MUTLAK
-        // Mencegah Prototype Pollution (#89), Clickjacking (#3), dan DOM Clobbering (#5)
+        // Mencegah Prototype Pollution (#89), Clickjacking (#3)
         // =========================================================================
         "use strict";
 
@@ -481,9 +470,7 @@
         Object.freeze(Array.prototype);
         Object.freeze(String.prototype);
 
-        if (window.top !== window.self) { 
-            window.top.location = window.self.location; 
-        }
+        if (window.top !== window.self) { window.top.location = window.self.location; }
 
         function escapeHTML(str) {
             if (!str) return '';
@@ -496,94 +483,46 @@
             const strUrl = String(url).trim();
             try {
                 const parsedUrl = new URL(strUrl, window.location.origin);
-                if (['http:', 'https:'].includes(parsedUrl.protocol)) {
-                    return escapeHTML(parsedUrl.href);
-                }
+                if (['http:', 'https:'].includes(parsedUrl.protocol)) { return escapeHTML(parsedUrl.href); }
             } catch (e) {
-                if (strUrl.startsWith('/') || strUrl.startsWith('./') || strUrl.startsWith('../')) {
-                    return escapeHTML(strUrl);
-                }
+                if (strUrl.startsWith('/') || strUrl.startsWith('./') || strUrl.startsWith('../')) { return escapeHTML(strUrl); }
             }
             return 'https://placehold.co/70x70/e0e5ec/a3b1c6?text=Barang'; 
         }
 
-        // =========================================================================
-        // ARCHITECTURE PATCH: IIFE (Immediately Invoked Function Expression)
-        // =========================================================================
         (function() {
             const isLocalhost = window.location.hostname === '127.0.0.1' || window.location.hostname === 'localhost';
-            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rusty-c22o.onrender.com';
+            const BASE_URL = isLocalhost ? 'http://127.0.0.1:10000' : 'https://rust-vjn7.onrender.com';
 
             const sessionData = localStorage.getItem('user_session');
-            if (!sessionData) { 
-                window.location.replace('login.html'); 
-                return;
-            }
+            if (!sessionData) { window.location.replace('login.html'); return; }
             
             let session;
             try {
                 session = JSON.parse(sessionData);
                 if (!session || !session.access_token) throw new Error();
             } catch(e) {
-                localStorage.removeItem('user_session');
-                window.location.replace('login.html');
-                return;
+                localStorage.removeItem('user_session'); window.location.replace('login.html'); return;
             }
 
             const CACHE_TTL = 15 * 60 * 1000;
             function getLocalCache(key) {
                 try {
-                    const item = localStorage.getItem(key);
-                    if (!item) return null;
+                    const item = localStorage.getItem(key); if (!item) return null;
                     const parsed = JSON.parse(item);
-                    if (Date.now() > parsed.expiry) {
-                        localStorage.removeItem(key);
-                        return null;
-                    }
+                    if (Date.now() > parsed.expiry) { localStorage.removeItem(key); return null; }
                     return parsed.data;
-                } catch (e) { 
-                    return null; 
-                }
+                } catch (e) { return null; }
             }
             function setLocalCache(key, data, customTTL = CACHE_TTL) {
-                try {
-                    localStorage.setItem(key, JSON.stringify({
-                        data: data,
-                        expiry: Date.now() + customTTL
-                    }));
-                } catch (e) {}
+                try { localStorage.setItem(key, JSON.stringify({ data: data, expiry: Date.now() + customTTL })); } catch (e) {}
             }
 
-            let allProducts = [];
-
-            let cartItems = [];
-            let rawSubtotal = 0; 
-            let finalTotalRp = 0; 
-            let appliedDiscount = 0;
-            let activeVouchers = []; 
-            
-            let globalName = "";
-            let globalAddress = "";
-            let globalPhone = "";
-            let globalZip = "";
-            let globalLat = null; 
-            let globalLng = null; 
-            
-            let selectedCourier = null;
-            let shippingCost = 0;
-            
-            let selectedPaymentMethodId = null;
-            let selectedPaymentPct = 0;
-            let selectedPaymentFixed = 0;
-            let adminFeeAmount = 0;
-            
-            let map, marker;
-            let itemToDeleteOriginalType = null;
-            let isCheckingOut = false;
-            
-            let pendingDeltas = {};
-            let syncTimeout = {};
-            let activeNetworkRequests = 0;
+            let allProducts = []; let cartItems = []; let rawSubtotal = 0; let finalTotalRp = 0; let appliedDiscount = 0; let activeVouchers = []; 
+            let globalName = ""; let globalAddress = ""; let globalPhone = ""; let globalZip = ""; let globalLat = null; let globalLng = null; 
+            let selectedCourier = null; let shippingCost = 0; let selectedPaymentMethodId = null; let adminFeeAmount = 0;
+            let map, marker; let itemToDeleteOriginalType = null; let isCheckingOut = false;
+            let pendingDeltas = {}; let syncTimeout = {}; let activeNetworkRequests = 0;
 
             const themeToggle = document.getElementById('themeToggle');
             const html = document.documentElement;
@@ -602,201 +541,60 @@
                 const notifMessage = document.getElementById('notifMessage');
                 const notifBtn = document.getElementById('notifBtn');
 
-                if(type === 'success') {
-                    notifIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i>';
-                    notifTitle.style.color = '#27ae60';
-                    notifBtn.innerText = 'Lanjut';
-                } else if(type === 'error') {
-                    notifIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ff4757;"></i>';
-                    notifTitle.style.color = '#ff4757';
-                    notifBtn.innerText = 'Tutup';
-                } else if(type === 'warning') {
-                    notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>';
-                    notifTitle.style.color = '#e67e22';
-                    
-                    if (redirectUrl && redirectUrl.includes('login.html')) {
-                        notifBtn.innerText = 'Login Sekarang';
-                    } else if (redirectUrl) {
-                        notifBtn.innerText = 'Lihat Pesanan';
-                    } else {
-                        notifBtn.innerText = 'Mengerti';
-                    }
-                }
+                if(type === 'success') { notifIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i>'; notifTitle.style.color = '#27ae60'; notifBtn.innerText = 'Lanjut'; }
+                else if(type === 'error') { notifIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ff4757;"></i>'; notifTitle.style.color = '#ff4757'; notifBtn.innerText = 'Tutup'; }
+                else if(type === 'warning') { notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>'; notifTitle.style.color = '#e67e22'; notifBtn.innerText = 'Mengerti'; }
 
-                notifTitle.textContent = String(title);
-                notifMessage.textContent = String(message);
-                
-                notifBtn.onclick = function() { 
-                    notifModal.classList.remove('active'); 
-                    if(redirectUrl) window.location.href = escapeHTML(redirectUrl);
-                };
+                notifTitle.textContent = String(title); notifMessage.textContent = String(message);
+                notifBtn.onclick = function() { notifModal.classList.remove('active'); if(redirectUrl) window.location.href = escapeHTML(redirectUrl); };
                 notifModal.classList.add('active');
             }
 
+            Object.defineProperty(window, 'copyToClipboard', {
+                value: function(elementId) {
+                    const text = document.getElementById(elementId).innerText;
+                    navigator.clipboard.writeText(text).then(() => { showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); }).catch(err => { showNotification("Gagal", "Gagal menyalin nomor.", "error"); });
+                }, writable: false, configurable: false
+            });
+
             async function updateNavUI() {
-                const loginBtn = document.getElementById('navLoginBtn');
-                const mobileAccountBtn = document.getElementById('mobileAccountBtn');
-
-                const savedName = escapeHTML(session.name || (session.user && session.user.name) || "User");
-                const tempNickname = savedName.split(' ')[0]; 
-                const tempAvatar = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(savedName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
-                
-                loginBtn.className = 'nav-profile-badge hide-on-mobile';
-                loginBtn.href = 'akun.html';
-                loginBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false"><span>${tempNickname}</span>`;
-
-                if (mobileAccountBtn) {
-                    mobileAccountBtn.innerHTML = `<img src="${safeURL(tempAvatar)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${tempNickname}</span>`;
-                }
-
                 try {
                     const userRes = await fetch(`${BASE_URL}/api/user`, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
-                    if (userRes.status === 401 || userRes.status === 403) {
-                        localStorage.removeItem('user_session'); 
-                        showNotification("Sesi Berakhir", "Sesi Anda habis. Silakan login kembali.", "warning", "login.html");
-                        return;
-                    }
-
                     if (userRes.ok) {
                         const userData = await userRes.json();
-                        const rawDisplayName = userData.nama_panggilan || (userData.nama_lengkap ? userData.nama_lengkap.split(' ')[0] : "User");
-                        const displayName = escapeHTML(rawDisplayName);
-                        const avatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
-
-                        globalName = escapeHTML(userData.nama_lengkap || "");
-                        globalAddress = escapeHTML(userData.alamat_lengkap || "");
-                        globalPhone = escapeHTML(userData.no_wa || "");
-                        globalZip = escapeHTML(userData.kode_pos || ""); 
-                        
-                        if(globalAddress && globalPhone && globalZip) {
-                            document.getElementById('summaryAddressVal').innerText = "Tersimpan"; 
-                            document.getElementById('summaryAddressVal').style.color = "#27ae60";
-                        } else if(globalAddress && globalPhone) {
-                            document.getElementById('summaryAddressVal').innerText = "Belum Ada Kodepos"; 
-                            document.getElementById('summaryAddressVal').style.color = "var(--text-main)";
-                        } else {
-                            document.getElementById('summaryAddressVal').innerText = "Belum Diatur"; 
-                        }
-
-                        loginBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false"><span>${displayName}</span>`;
-
-                        if (mobileAccountBtn) {
-                            mobileAccountBtn.innerHTML = `<img src="${safeURL(avatarUrl)}" alt="Avatar" draggable="false" style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; margin-bottom: 2px;"><span>${displayName}</span>`;
-                        }
+                        globalName = escapeHTML(userData.nama_lengkap || ""); globalAddress = escapeHTML(userData.alamat_lengkap || "");
+                        globalPhone = escapeHTML(userData.no_wa || ""); globalZip = escapeHTML(userData.kode_pos || ""); 
+                        if(globalAddress && globalPhone && globalZip) { document.getElementById('summaryAddressVal').innerText = "Tersimpan"; document.getElementById('summaryAddressVal').style.color = "#27ae60"; }
+                        else if(globalAddress && globalPhone) { document.getElementById('summaryAddressVal').innerText = "Belum Ada Kodepos"; document.getElementById('summaryAddressVal').style.color = "var(--text-main)"; }
+                        else { document.getElementById('summaryAddressVal').innerText = "Belum Diatur"; }
                     }
                     syncBadges(session.access_token);
                 } catch (e) { }
             }
 
             async function syncBadges(token) {
-                // 1. Perisai Keranjang
                 const cachedCart = getLocalCache('bakoel_cart_qty');
                 if (cachedCart === null) {
                     try {
                         const cartRes = await fetch(`${BASE_URL}/api/cart`, { headers: { 'Authorization': `Bearer ${token}` } });
                         if (cartRes.ok) {
-                            const cartItems = await cartRes.json();
-                            const totalQty = cartItems.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+                            const items = await cartRes.json();
+                            const totalQty = items.reduce((sum, i) => sum + (Number(i.quantity) || 0), 0);
                             setLocalCache('bakoel_cart_qty', totalQty, 10 * 60 * 1000);
-                            
-                            const cartBadge = document.getElementById('cartBadge');
-                            const mobileCartBadge = document.getElementById('mobileCartBadge');
-                            const displayText = totalQty > 99 ? '99+' : escapeHTML(String(totalQty));
-                            
-                            if(cartBadge) {
-                                cartBadge.style.display = totalQty > 0 ? 'flex' : 'none';
-                                cartBadge.innerText = displayText;
-                            }
-                            if(mobileCartBadge) {
-                                mobileCartBadge.style.display = totalQty > 0 ? 'flex' : 'none';
-                                mobileCartBadge.innerText = displayText;
-                            }
+                            const badge = document.getElementById('cartBadge');
+                            if(badge) { badge.style.display = totalQty > 0 ? 'flex' : 'none'; badge.innerText = totalQty > 99 ? '99+' : totalQty; }
                         }
-                    } catch (e) {
-                        console.error("Gagal sinkronisasi keranjang:", e);
-                    }
-                }
-
-                // 2. Perisai Voucher
-                const cachedPromo = getLocalCache('bakoel_promo_qty');
-                if (cachedPromo === null) {
-                    try {
-                        const promoRes = await fetch(`${BASE_URL}/api/vouchers`, { headers: { 'Authorization': `Bearer ${token}` } });
-                        if (promoRes.ok) {
-                            const promos = await promoRes.json();
-                            setLocalCache('bakoel_promo_qty', promos.length, 30 * 60 * 1000);
-                            
-                            const pBadge = document.getElementById('promoBadge');
-                            const mpBadge = document.getElementById('mobilePromoBadge');
-                            const promoLen = String(promos.length);
-                            
-                            if(pBadge) { 
-                                pBadge.style.display = promos.length > 0 ? 'flex' : 'none'; 
-                                pBadge.innerText = promoLen; 
-                            }
-                            if(mpBadge) { 
-                                mpBadge.style.display = promos.length > 0 ? 'flex' : 'none'; 
-                                mpBadge.innerText = promoLen; 
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Gagal sinkronisasi voucher:", e);
-                    }
-                }
-
-                // 3. Perisai Pesanan Aktif
-                const cachedOrder = getLocalCache('bakoel_order_qty');
-                if (cachedOrder === null) {
-                    try {
-                        const orderRes = await fetch(`${BASE_URL}/api/orders`, { headers: { 'Authorization': `Bearer ${token}` } });
-                        if (orderRes.ok) {
-                            const orders = await orderRes.json();
-                            const activeOrders = orders.filter(o => o.status !== 'Selesai' && o.status !== 'Dibatalkan');
-                            const activeLenStr = String(activeOrders.length);
-                            
-                            setLocalCache('bakoel_order_qty', activeOrders.length, 5 * 60 * 1000);
-                            
-                            const oBadge = document.getElementById('orderBadge');
-                            const moBadge = document.getElementById('mobileOrderBadge');
-                            
-                            if(oBadge) { 
-                                oBadge.style.display = activeOrders.length > 0 ? 'flex' : 'none'; 
-                                oBadge.innerText = activeLenStr; 
-                            }
-                            if(moBadge) { 
-                                moBadge.style.display = activeOrders.length > 0 ? 'flex' : 'none'; 
-                                moBadge.innerText = activeLenStr; 
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Gagal sinkronisasi pesanan:", e);
-                    }
+                    } catch (e) {}
                 }
             }
 
-            function formatRupiah(number) { 
-                const safeNumber = parseInt(number) || 0;
-                return "Rp " + safeNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
-            }
-            
-            function parsePrice(priceString) { 
-                if(!priceString) return 0;
-                if(typeof priceString === 'number') return priceString;
-                return parseInt(String(priceString).replace(/[^0-9]/g, '')) || 0; 
-            }
+            function formatRupiah(number) { return "Rp " + (parseInt(number) || 0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); }
+            function parsePrice(priceString) { return parseInt(String(priceString).replace(/[^0-9]/g, '')) || 0; }
 
             async function fetchProductsCatalog() {
                 const cached = getLocalCache('bakoel_products_catalog');
-                if (cached) {
-                    allProducts = cached;
-                } else {
-                    try {
-                        const res = await fetch('./katalog.json');
-                        if (res.ok) {
-                            allProducts = await res.json();
-                            setLocalCache('bakoel_products_catalog', allProducts, 15 * 60 * 1000);
-                        }
-                    } catch (e) {}
+                if (cached) { allProducts = cached; } else {
+                    try { const res = await fetch('./katalog.json'); if (res.ok) { allProducts = await res.json(); setLocalCache('bakoel_products_catalog', allProducts, 15 * 60 * 1000); } } catch (e) {}
                 }
             }
 
@@ -804,98 +602,42 @@
                 const container = document.getElementById('cartContainer');
                 if(cartItems.length === 0) {
                     container.innerHTML = `<div class="empty-cart"><i class="fas fa-box-open fa-3x"></i><br><br>Keranjang kosong.<br><a href="index.html" style="color:var(--accent-color); text-decoration:none;">Belanja Sekarang</a></div>`;
-                    document.getElementById('totalPriceDisplay').innerText = "Rp 0";
-                    document.getElementById('strikePriceDisplay').style.display = 'none';
-                    document.getElementById('costBreakdown').style.display = 'none';
-                    
-                    const btnCheckout = document.getElementById('checkoutBtn');
-                    if(btnCheckout) { btnCheckout.disabled = true; btnCheckout.innerHTML = 'Buat Pesanan'; }
-                    document.getElementById('mobileCartBadge').style.display = 'none';
-                    document.getElementById('cartBadge').style.display = 'none';
-                    
-                    try { localStorage.setItem('bakoel_cart_qty', JSON.stringify({ data: 0, expiry: Date.now() + CACHE_TTL })); } catch(e){}
+                    document.getElementById('totalPriceDisplay').innerText = "Rp 0"; document.getElementById('costBreakdown').style.display = 'none';
+                    const btnCheckout = document.getElementById('checkoutBtn'); if(btnCheckout) { btnCheckout.disabled = true; btnCheckout.innerHTML = 'Buat Pesanan'; }
                     return;
                 }
 
-                const fragment = document.createDocumentFragment();
-                let total = 0;
-                let currentCartTotalQty = 0;
+                const fragment = document.createDocumentFragment(); let total = 0; let currentCartTotalQty = 0;
 
                 cartItems.forEach(item => {
                     const catalogData = allProducts.find(p => String(p.id) === String(item.product_id));
-                    
-                    let displayPrice = item.product_price || 0;
-                    let displayName = item.product_name || "Produk Tidak Diketahui";
-                    
+                    let displayPrice = item.product_price || 0; let displayName = item.product_name || "Produk Tidak Diketahui";
                     let displayImg = item.product_img || 'https://placehold.co/70x70/e0e5ec/a3b1c6?text=Barang';
-                    if (typeof displayImg === 'string') {
-                        try { displayImg = JSON.parse(displayImg); } catch(e) {}
-                    }
+                    if (typeof displayImg === 'string') { try { displayImg = JSON.parse(displayImg); } catch(e) {} }
                     if (Array.isArray(displayImg)) displayImg = displayImg[0];
-                    
                     let availableStock = parseInt(item.available_stock) || 0; 
 
                     if (catalogData) {
                         displayName = catalogData.title || displayName;
-                        let catImg = catalogData.img;
-                        if (typeof catImg === 'string') { try { catImg = JSON.parse(catImg); } catch(e){} }
+                        let catImg = catalogData.img; if (typeof catImg === 'string') { try { catImg = JSON.parse(catImg); } catch(e){} }
                         displayImg = Array.isArray(catImg) && catImg.length > 0 ? catImg[0] : displayImg;
                         displayPrice = (catalogData.is_promo && catalogData.promo_price > 0) ? catalogData.promo_price : catalogData.price;
                         availableStock = parseInt(catalogData.quantity) || availableStock;
                     }
 
-                    const rawPrice = parsePrice(displayPrice);
-                    let safeQty = parseInt(item.quantity);
-                    if (isNaN(safeQty) || safeQty < 1) safeQty = 1;
-                    
-                    item.product_price = rawPrice;
-                    item.product_name = displayName;
-                    item.product_img = displayImg;
-                    item.available_stock = availableStock;
+                    const rawPrice = parsePrice(displayPrice); let safeQty = parseInt(item.quantity); if (isNaN(safeQty) || safeQty < 1) safeQty = 1;
+                    item.product_price = rawPrice; item.product_name = displayName; item.product_img = displayImg; item.available_stock = availableStock;
+                    currentCartTotalQty += safeQty; total += (rawPrice * safeQty);
 
-                    currentCartTotalQty += safeQty;
-                    total += (rawPrice * safeQty);
-                    const safePriceHTML = rawPrice > 0 ? formatRupiah(rawPrice) : "<span style='color:#ff4757; font-size:12px;'>Harga Terkunci</span>";
-
-                    const card = document.createElement('div');
-                    card.className = 'cart-card';
-                    card.innerHTML = `
-                        <img src="${safeURL(displayImg)}" class="cart-img" draggable="false" alt="Produk">
-                        <div class="cart-details">
-                            <div class="cart-title">${escapeHTML(String(displayName))}</div>
-                            <div class="cart-price">${safePriceHTML}</div>
-                            <div class="cart-actions-inline">
-                                <div class="qty-control">
-                                    <button class="qty-btn" onclick="window.changeQty('${escapeHTML(String(item.id))}', -1)"><i class="fas fa-minus"></i></button>
-                                    <input type="text" class="qty-input" value="${safeQty}" readonly>
-                                    <button class="qty-btn" onclick="window.changeQty('${escapeHTML(String(item.id))}', 1)"><i class="fas fa-plus"></i></button>
-                                </div>
-                                <button class="btn-delete" onclick="window.confirmDelete('${escapeHTML(String(item.id))}')"><i class="fas fa-trash-alt"></i></button>
-                            </div>
-                        </div>`;
+                    const card = document.createElement('div'); card.className = 'cart-card';
+                    card.innerHTML = `<img src="${safeURL(displayImg)}" class="cart-img" draggable="false" alt="Produk"><div class="cart-details"><div class="cart-title">${escapeHTML(String(displayName))}</div><div class="cart-price">${rawPrice > 0 ? formatRupiah(rawPrice) : "<span style='color:#ff4757;'>Terkunci</span>"}</div><div class="cart-actions-inline"><div class="qty-control"><button class="qty-btn" onclick="window.changeQty('${escapeHTML(String(item.id))}', -1)"><i class="fas fa-minus"></i></button><input type="text" class="qty-input" value="${safeQty}" readonly><button class="qty-btn" onclick="window.changeQty('${escapeHTML(String(item.id))}', 1)"><i class="fas fa-plus"></i></button></div><button class="btn-delete" onclick="window.confirmDelete('${escapeHTML(String(item.id))}')"><i class="fas fa-trash-alt"></i></button></div></div>`;
                     fragment.appendChild(card);
                 });
 
-                container.innerHTML = '';
-                container.appendChild(fragment);
-                
-                rawSubtotal = total;
-                
+                container.innerHTML = ''; container.appendChild(fragment); rawSubtotal = total;
                 try { localStorage.setItem('bakoel_cart_qty', JSON.stringify({ data: currentCartTotalQty, expiry: Date.now() + CACHE_TTL })); } catch(e){}
-                
-                const badgeText = currentCartTotalQty > 99 ? '99+' : currentCartTotalQty;
-                document.getElementById('cartBadge').style.display = currentCartTotalQty > 0 ? 'flex' : 'none';
-                document.getElementById('cartBadge').innerText = badgeText;
-                if(document.getElementById('mobileCartBadge')) {
-                    document.getElementById('mobileCartBadge').style.display = currentCartTotalQty > 0 ? 'flex' : 'none';
-                    document.getElementById('mobileCartBadge').innerText = badgeText;
-                }
 
-                if(activeVouchers.length > 0) {
-                    syncPromosAndApply();
-                } else { 
-                    applyPromoMath(); 
-                }
+                if(activeVouchers.length > 0) { syncPromosAndApply(); } else { applyPromoMath(); }
 
                 const btnCheckout = document.getElementById('checkoutBtn');
                 if(btnCheckout && Object.keys(syncTimeout).length === 0 && activeNetworkRequests === 0) {
@@ -908,137 +650,52 @@
                 try {
                     const res = await fetch(`${BASE_URL}/api/cart`, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
                     if (!res.ok) throw new Error("Gagal load keranjang");
-                    cartItems = await res.json();
-                    renderCartItems();
-                } catch (error) {
-                    document.getElementById('cartContainer').innerHTML = `<div class="empty-cart"><i class="fas fa-exclamation-triangle fa-3x" style="color:#ff4757;"></i><br><br>Gagal memuat keranjang.</div>`;
-                }
+                    cartItems = await res.json(); renderCartItems();
+                } catch (error) { document.getElementById('cartContainer').innerHTML = `<div class="empty-cart"><i class="fas fa-exclamation-triangle fa-3x" style="color:#ff4757;"></i><br><br>Gagal memuat keranjang.</div>`; }
             }
 
             Object.defineProperty(window, 'changeQty', {
                 value: async function(htmlId, delta) {
-                    const safeId = String(htmlId);
-                    const originalItem = cartItems.find(x => String(x.id) === safeId);
-                    if(!originalItem) return;
-
-                    const currentQty = parseInt(originalItem.quantity) || 0;
-                    const parsedDelta = parseInt(delta) || 0;
-                    let newQty = currentQty + parsedDelta;
-                    
+                    const safeId = String(htmlId); const originalItem = cartItems.find(x => String(x.id) === safeId); if(!originalItem) return;
+                    const currentQty = parseInt(originalItem.quantity) || 0; const parsedDelta = parseInt(delta) || 0; let newQty = currentQty + parsedDelta;
                     if(newQty < 1) return window.confirmDelete(safeId);
-
                     const availableStock = parseInt(originalItem.available_stock) || 0;
-                    if (newQty > availableStock) {
-                        showNotification("Stok Mentok", `Sisa stok barang ini di gudang hanya ${availableStock} Pcs.`, "warning");
-                        if (currentQty >= availableStock) return; 
-                        newQty = availableStock; 
-                    }
+                    if (newQty > availableStock) { showNotification("Stok Mentok", `Sisa stok: ${availableStock} Pcs.`, "warning"); if (currentQty >= availableStock) return; newQty = availableStock; }
+                    originalItem.quantity = newQty; renderCartItems(); 
 
-                    originalItem.quantity = newQty;
-                    renderCartItems(); 
-
-                    const checkoutBtn = document.getElementById('checkoutBtn');
-                    if (checkoutBtn) {
-                        checkoutBtn.disabled = true;
-                        checkoutBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Menyinkronkan...';
-                    }
-                    
+                    const checkoutBtn = document.getElementById('checkoutBtn'); if (checkoutBtn) { checkoutBtn.disabled = true; checkoutBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Menyinkronkan...'; }
                     if (typeof pendingDeltas[safeId] === 'undefined') pendingDeltas[safeId] = 0;
                     pendingDeltas[safeId] += (newQty - currentQty); 
-
                     if (syncTimeout[safeId]) clearTimeout(syncTimeout[safeId]);
 
                     syncTimeout[safeId] = setTimeout(async () => {
-                        const accumulatedDelta = pendingDeltas[safeId];
-                        pendingDeltas[safeId] = 0; 
-                        delete syncTimeout[safeId];
-
+                        const accumulatedDelta = pendingDeltas[safeId]; pendingDeltas[safeId] = 0; delete syncTimeout[safeId];
                         if (accumulatedDelta !== 0) {
                             activeNetworkRequests++;
                             try {
                                 const safeProductId = isNaN(originalItem.product_id) ? String(originalItem.product_id) : Number(originalItem.product_id);
-                                const res = await fetch(`${BASE_URL}/api/cart`, { 
-                                    method: 'POST', 
-                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
-                                    body: JSON.stringify({ 
-                                        product_id: safeProductId, 
-                                        quantity: accumulatedDelta
-                                    }) 
-                                });
+                                const res = await fetch(`${BASE_URL}/api/cart`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ product_id: safeProductId, quantity: accumulatedDelta }) });
                                 if (!res.ok) throw new Error("Ditolak Server");
-                            } catch (e) {
-                                showNotification("Kesalahan Sinkronisasi", "Gagal memperbarui jumlah. Halaman dimuat ulang.", "error");
-                                setTimeout(() => window.location.reload(), 1500);
-                            } finally {
-                                activeNetworkRequests--;
-                            }
+                            } catch (e) { showNotification("Kesalahan", "Gagal memperbarui jumlah.", "error"); setTimeout(() => window.location.reload(), 1500); } finally { activeNetworkRequests--; }
                         }
-
-                        if (Object.keys(syncTimeout).length === 0 && activeNetworkRequests === 0) {
-                            const btn = document.getElementById('checkoutBtn');
-                            if (btn) {
-                                btn.disabled = (finalTotalRp === 0 && cartItems.length > 0) || !globalZip || !selectedCourier || !selectedPaymentMethodId;
-                                btn.innerHTML = 'Buat Pesanan';
-                            }
-                        }
+                        if (Object.keys(syncTimeout).length === 0 && activeNetworkRequests === 0) { const btn = document.getElementById('checkoutBtn'); if (btn) { btn.disabled = (finalTotalRp === 0 && cartItems.length > 0) || !globalZip || !selectedCourier || !selectedPaymentMethodId; btn.innerHTML = 'Buat Pesanan'; } }
                     }, 600); 
-                },
-                writable: false,
-                configurable: false
+                }, writable: false, configurable: false
             });
 
-            Object.defineProperty(window, 'confirmDelete', {
-                value: function(htmlId) { 
-                    const safeId = String(htmlId);
-                    const originalItem = cartItems.find(x => String(x.id) === safeId);
-                    itemToDeleteOriginalType = originalItem ? originalItem.id : safeId; 
-                    document.getElementById('confirmDeleteModal').classList.add('active'); 
-                },
-                writable: false,
-                configurable: false
-            });
-
-            Object.defineProperty(window, 'closeDeleteModal', {
-                value: function() { 
-                    itemToDeleteOriginalType = null; 
-                    document.getElementById('confirmDeleteModal').classList.remove('active'); 
-                },
-                writable: false,
-                configurable: false
-            });
-            
+            Object.defineProperty(window, 'confirmDelete', { value: function(htmlId) { const safeId = String(htmlId); const originalItem = cartItems.find(x => String(x.id) === safeId); itemToDeleteOriginalType = originalItem ? originalItem.id : safeId; document.getElementById('confirmDeleteModal').classList.add('active'); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'closeDeleteModal', { value: function() { itemToDeleteOriginalType = null; document.getElementById('confirmDeleteModal').classList.remove('active'); }, writable: false, configurable: false });
             Object.defineProperty(window, 'executeDelete', {
                 value: async function() {
-                    if(!itemToDeleteOriginalType) return;
-                    const targetId = itemToDeleteOriginalType; 
-                    window.closeDeleteModal();
-                    
+                    if(!itemToDeleteOriginalType) return; const targetId = itemToDeleteOriginalType; window.closeDeleteModal();
                     if (syncTimeout[targetId]) { clearTimeout(syncTimeout[targetId]); delete syncTimeout[targetId]; }
                     if (pendingDeltas[targetId]) pendingDeltas[targetId] = 0;
-                    
                     try {
-                        const res = await fetch(`${BASE_URL}/api/cart`, { 
-                            method: 'DELETE', 
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
-                            body: JSON.stringify({ id: String(targetId) }) 
-                        });
-                        
+                        const res = await fetch(`${BASE_URL}/api/cart`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ id: String(targetId) }) });
                         if (!res.ok) throw new Error("Ditolak Server");
-                        
-                        cartItems = cartItems.filter(x => String(x.id) !== String(targetId));
-                        renderCartItems();
-                    } catch (e) { 
-                        showNotification("Gagal", `Tidak dapat menghapus barang.`, "error"); 
-                    } finally {
-                        const btn = document.getElementById('checkoutBtn');
-                        if (btn && cartItems.length > 0) {
-                            btn.disabled = (!globalZip || !selectedCourier || !selectedPaymentMethodId);
-                            btn.innerHTML = 'Buat Pesanan';
-                        }
-                    }
-                },
-                writable: false,
-                configurable: false
+                        cartItems = cartItems.filter(x => String(x.id) !== String(targetId)); renderCartItems();
+                    } catch (e) { showNotification("Gagal", `Tidak dapat menghapus barang.`, "error"); } finally { const btn = document.getElementById('checkoutBtn'); if (btn && cartItems.length > 0) { btn.disabled = (!globalZip || !selectedCourier || !selectedPaymentMethodId); btn.innerHTML = 'Buat Pesanan'; } }
+                }, writable: false, configurable: false
             });
 
             function initMap() {
@@ -1046,481 +703,193 @@
                 map = L.map('mapPicker').setView([1.1301, 104.0529], 11); 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
                 marker = L.marker([1.1301, 104.0529], {draggable: true}).addTo(map);
-                marker.on('dragend', function(e) {
-                    const pos = marker.getLatLng();
-                    globalLat = pos.lat; globalLng = pos.lng;
-                    reverseGeocode(pos.lat, pos.lng); 
-                });
+                marker.on('dragend', function(e) { const pos = marker.getLatLng(); globalLat = pos.lat; globalLng = pos.lng; reverseGeocode(pos.lat, pos.lng); });
             }
 
             Object.defineProperty(window, 'autoGetLocation', {
                 value: function() {
-                    const statusLabel = document.getElementById('mapStatus');
-                    statusLabel.innerText = "Mencari sinyal GPS..."; statusLabel.style.color = "#e67e22";
-
+                    const statusLabel = document.getElementById('mapStatus'); statusLabel.innerText = "Mencari sinyal GPS..."; statusLabel.style.color = "#e67e22";
                     if (navigator.geolocation) {
                         navigator.geolocation.getCurrentPosition((position) => {
                             globalLat = position.coords.latitude; globalLng = position.coords.longitude;
-                            const newLatLng = new L.LatLng(globalLat, globalLng);
-                            map.setView(newLatLng, 16); marker.setLatLng(newLatLng);
-                            reverseGeocode(globalLat, globalLng);
-                        }, (error) => {
-                            statusLabel.innerText = "Akses GPS ditolak/gagal. Geser pin manual."; statusLabel.style.color = "#ff4757";
-                        }, { enableHighAccuracy: true });
-                    } else {
-                        statusLabel.innerText = "Browser tidak mendukung GPS.";
+                            const newLatLng = new L.LatLng(globalLat, globalLng); map.setView(newLatLng, 16); marker.setLatLng(newLatLng); reverseGeocode(globalLat, globalLng);
+                        }, (error) => { statusLabel.innerText = "GPS ditolak. Geser manual."; statusLabel.style.color = "#ff4757"; }, { enableHighAccuracy: true });
                     }
-                },
-                writable: false,
-                configurable: false
+                }, writable: false, configurable: false
             });
 
             async function reverseGeocode(lat, lng) {
-                const statusLabel = document.getElementById('mapStatus');
-                statusLabel.innerText = "Menerjemahkan lokasi...";
+                const statusLabel = document.getElementById('mapStatus'); statusLabel.innerText = "Menerjemahkan lokasi...";
                 try {
-                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`);
-                    const data = await res.json();
-                    if (data && data.address && data.address.postcode) {
-                        document.getElementById('modalShipZip').value = escapeHTML(data.address.postcode);
-                        statusLabel.innerText = "Lokasi & Kodepos dikunci!"; statusLabel.style.color = "#27ae60";
-                    } else {
-                        statusLabel.innerText = "Kodepos tidak ditemukan. Ketik manual."; statusLabel.style.color = "#e67e22";
-                    }
-                } catch (e) {
-                    statusLabel.innerText = "Gagal menerjemahkan lokasi."; statusLabel.style.color = "#ff4757";
-                }
+                    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}`); const data = await res.json();
+                    if (data && data.address && data.address.postcode) { document.getElementById('modalShipZip').value = escapeHTML(data.address.postcode); statusLabel.innerText = "Lokasi & Kodepos dikunci!"; statusLabel.style.color = "#27ae60"; } else { statusLabel.innerText = "Kodepos tak ditemukan."; statusLabel.style.color = "#e67e22"; }
+                } catch (e) { statusLabel.innerText = "Gagal menerjemahkan lokasi."; statusLabel.style.color = "#ff4757"; }
             }
 
-            Object.defineProperty(window, 'openAddressModal', {
-                value: function() { 
-                    document.getElementById('modalShipName').value = globalName; 
-                    document.getElementById('modalShipPhone').value = globalPhone; 
-                    document.getElementById('modalShipZip').value = globalZip; 
-                    document.getElementById('modalShipAddress').value = globalAddress; 
-                    document.getElementById('addressModal').classList.add('active'); 
-                    setTimeout(() => { initMap(); }, 300);
-                },
-                writable: false,
-                configurable: false
-            });
-            
-            Object.defineProperty(window, 'closeAddressModal', {
-                value: function() { document.getElementById('addressModal').classList.remove('active'); },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'openAddressModal', { value: function() { document.getElementById('modalShipName').value = globalName; document.getElementById('modalShipPhone').value = globalPhone; document.getElementById('modalShipZip').value = globalZip; document.getElementById('modalShipAddress').value = globalAddress; document.getElementById('addressModal').classList.add('active'); setTimeout(() => { initMap(); }, 300); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'closeAddressModal', { value: function() { document.getElementById('addressModal').classList.remove('active'); }, writable: false, configurable: false });
             
             Object.defineProperty(window, 'saveAddressInfo', {
                 value: async function() { 
-                    globalName = escapeHTML(document.getElementById('modalShipName').value.trim());
-                    globalAddress = escapeHTML(document.getElementById('modalShipAddress').value.trim()); 
-                    globalPhone = escapeHTML(document.getElementById('modalShipPhone').value.trim()); 
-                    globalZip = escapeHTML(document.getElementById('modalShipZip').value.trim());
-                    
+                    globalName = escapeHTML(document.getElementById('modalShipName').value.trim()); globalAddress = escapeHTML(document.getElementById('modalShipAddress').value.trim()); globalPhone = escapeHTML(document.getElementById('modalShipPhone').value.trim()); globalZip = escapeHTML(document.getElementById('modalShipZip').value.trim());
                     if(globalName && globalAddress && globalPhone && globalZip) {
-                        const btn = document.querySelector('#addressModal .btn-checkout');
-                        const originalText = btn.innerHTML;
-                        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
-                        btn.disabled = true;
-
+                        const btn = document.querySelector('#addressModal .btn-checkout'); const originalText = btn.innerHTML; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; btn.disabled = true;
                         try {
-                            await fetch(`${BASE_URL}/api/user`, {
-                                method: 'PUT',
-                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                                body: JSON.stringify({
-                                    nama_lengkap: globalName,
-                                    no_wa: globalPhone,
-                                    kode_pos: globalZip,
-                                    alamat_lengkap: globalAddress
-                                })
-                            });
-
-                            document.getElementById('summaryAddressVal').innerText = "Tersimpan"; 
-                            document.getElementById('summaryAddressVal').style.color = "#27ae60";
-                            selectedCourier = null; shippingCost = 0;
-                            document.getElementById('summaryShippingVal').innerText = "Klik untuk Pilih";
-                            document.getElementById('summaryShippingVal').style.color = "var(--text-main)";
-                            
+                            await fetch(`${BASE_URL}/api/user`, { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ nama_lengkap: globalName, no_wa: globalPhone, kode_pos: globalZip, alamat_lengkap: globalAddress }) });
+                            document.getElementById('summaryAddressVal').innerText = "Tersimpan"; document.getElementById('summaryAddressVal').style.color = "#27ae60";
+                            selectedCourier = null; shippingCost = 0; document.getElementById('summaryShippingVal').innerText = "Klik untuk Pilih"; document.getElementById('summaryShippingVal').style.color = "var(--text-main)";
                             window.closeAddressModal(); renderCartItems(); window.openShippingModal(); 
-                        } catch (error) {
-                            showNotification("Gagal", "Terjadi kesalahan saat menyimpan alamat.", "error");
-                        } finally {
-                            btn.innerHTML = originalText;
-                            btn.disabled = false;
-                        }
-                    } else {
-                        document.getElementById('summaryAddressVal').innerText = "Belum Lengkap";
-                        showNotification("Alamat Belum Lengkap", "Pastikan Nama, No WA, Kodepos, dan Alamat terisi semua.", "warning");
-                    }
-                },
-                writable: false,
-                configurable: false
+                        } catch (error) { showNotification("Gagal", "Kesalahan saat menyimpan alamat.", "error"); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+                    } else { showNotification("Alamat Belum Lengkap", "Pastikan Nama, No WA, Kodepos, dan Alamat terisi semua.", "warning"); }
+                }, writable: false, configurable: false
             });
 
-            Object.defineProperty(window, 'openShippingModal', {
-                value: function() { 
-                    if(!globalZip || !globalAddress) return showNotification("Kodepos Kosong", "Atur alamat pengiriman terlebih dahulu.", "warning");
-                    document.getElementById('shippingModal').classList.add('active'); 
-                    fetchShippingRates();
-                },
-                writable: false,
-                configurable: false
-            });
-            
-            Object.defineProperty(window, 'closeShippingModal', {
-                value: function() { document.getElementById('shippingModal').classList.remove('active'); },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'openShippingModal', { value: function() { if(!globalZip || !globalAddress) return showNotification("Kodepos Kosong", "Atur alamat pengiriman terlebih dahulu.", "warning"); document.getElementById('shippingModal').classList.add('active'); fetchShippingRates(); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'closeShippingModal', { value: function() { document.getElementById('shippingModal').classList.remove('active'); }, writable: false, configurable: false });
 
             async function fetchShippingRates() {
-                const container = document.getElementById('availableCouriersContainer');
-                container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted); padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Menghitung ongkir logistik...</div>';
-                
+                const container = document.getElementById('availableCouriersContainer'); container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted); padding: 20px;"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Menghitung ongkir...</div>';
                 try {
                     const payloadItems = cartItems.map(x => ({ product_id: x.product_id, quantity: Number(x.quantity) }));
-                    
-                    const payloadData = {
-                        destination_postal_code: String(globalZip),
-                        postal_code: String(globalZip),
-                        couriers: "jne,sicepat,jnt,pos,tiki,anteraja,ninja", 
-                        items: payloadItems 
-                    };
+                    const res = await fetch(`${BASE_URL}/api/shipping-rates`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ destination_postal_code: String(globalZip), postal_code: String(globalZip), couriers: "jne,sicepat,jnt,pos,tiki,anteraja,ninja", items: payloadItems }) });
+                    if (!res.ok) throw new Error("Gagal");
+                    const data = await res.json(); const pricing = data.pricing || [];
+                    if(pricing.length === 0) { container.innerHTML = '<div style="text-align:center; font-size:12px; color:#ff4757; padding: 20px;">Kurir tidak menjangkau.</div>'; return; }
 
-                    const res = await fetch(`${BASE_URL}/api/shipping-rates`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                        body: JSON.stringify(payloadData)
-                    });
-                    
-                    if (!res.ok) {
-                        const errData = await res.json();
-                        throw new Error(errData.error || "Gagal menghubungi kurir");
-                    }
-                    const data = await res.json();
-                    const pricing = data.pricing || [];
-                    
-                    if(pricing.length === 0) {
-                        container.innerHTML = '<div style="text-align:center; font-size:12px; color:#ff4757; padding: 20px;">Kurir tidak menjangkau kodepos ini.</div>';
-                        return;
-                    }
-
-                    const courierLogos = {
-                        // 1. Kamus Logo Varian Spesifik (KUNCI KOMBINASI: "perusahaan_varian")
-                        "jne_yes": "https://placehold.co/50x20/e0e5ec/0984e3?text=JNE+YES",
-                        "jne_jtr": "https://placehold.co/50x20/e0e5ec/0984e3?text=JTR+CARGO",
-                        "jnt_ez": "https://placehold.co/50x20/e0e5ec/e3000f?text=JNT+EZ",
-
-                        // 2. Kamus Logo Induk Asli Anda (Sistem Gugur / Fallback)
-                        "jne": "https://zonalogo.com/assets/logo-jne.webp",
-                        "jnt": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/J%26T_Express_logo.svg/3840px-J%26T_Express_logo.svg.png",
-                        "sicepat": "https://download.bloguna.com/uploads/152878/SiCepat-Express.png",
-                        "pos": "https://images.seeklogo.com/logo-png/28/2/pos-indonesia-logo-png_seeklogo-287781.png",
-                        "tiki": "https://images.seeklogo.com/logo-png/13/1/tiki-logo-png_seeklogo-139990.png",
-                        "anteraja": "https://iconlogovector.com/uploads/images/2023/11/lg-655d07178ffa3-anteraja.png",
-                        "ninja": "https://iconlogovector.com/uploads/images/2023/11/lg-655c1e2fdd71e-ninja-xpress.png"
-                    };
-
+                    const courierLogos = { "jne_yes": "https://placehold.co/50x20/e0e5ec/0984e3?text=JNE+YES", "jne_jtr": "https://placehold.co/50x20/e0e5ec/0984e3?text=JTR+CARGO", "jnt_ez": "https://placehold.co/50x20/e0e5ec/e3000f?text=JNT+EZ", "jne": "https://zonalogo.com/assets/logo-jne.webp", "jnt": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/J%26T_Express_logo.svg/3840px-J%26T_Express_logo.svg.png", "sicepat": "https://download.bloguna.com/uploads/152878/SiCepat-Express.png", "pos": "https://images.seeklogo.com/logo-png/28/2/pos-indonesia-logo-png_seeklogo-287781.png" };
                     container.innerHTML = '';
                     pricing.forEach(c => {
-                        const price = c.price || 0;
-                        const companyRaw = String(c.company).toLowerCase();
-                        const typeRaw = String(c.type).toLowerCase();
+                        const price = c.price || 0; const companyRaw = String(c.company).toLowerCase(); const typeRaw = String(c.type).toLowerCase();
+                        const cName = `${escapeHTML(companyRaw).toUpperCase()} - ${escapeHTML(typeRaw).toUpperCase()}`;
+                        const variantKey = `${companyRaw}_${typeRaw}`; const logoUrl = courierLogos[variantKey] || courierLogos[companyRaw] || 'https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir';
+                        const durasi = c.duration ? `${escapeHTML(String(c.duration).replace(/days|day/gi, '').trim())} Hari` : '-';
                         
-                        const safeCompany = escapeHTML(companyRaw);
-                        const safeType = escapeHTML(String(c.type));
-                        const cName = `${safeCompany.toUpperCase()} - ${safeType.toUpperCase()}`;
-                        
-                        const variantKey = `${companyRaw}_${typeRaw}`;
-                        
-                        const logoUrl = courierLogos[variantKey] || courierLogos[companyRaw] || 'https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir';
-                        
-                        let cleanDuration = c.duration ? String(c.duration).replace(/days|day/gi, '').trim() : '';
-                        const durasi = cleanDuration ? `${escapeHTML(cleanDuration)} Hari` : '-';
-                        
-                        container.innerHTML += `
-                            <div class="promo-pill" style="cursor:pointer; display: flex; align-items: center;" onclick="window.selectCourier('${safeCompany}', '${safeType}', ${price}, '${escapeHTML(cName)}')">
-                                
-                                <div class="promo-pill-info" style="display: flex; align-items: center; gap: 12px; flex: 1;">
-                                    <div style="width: 50px; height: 25px; display: flex; justify-content: center; align-items: center; background: #fff; padding: 2px 5px; border-radius: 6px; box-shadow: var(--neu-pressed-sm);">
-                                        <img src="${logoUrl}" alt="${safeCompany}" style="max-width: 100%; max-height: 100%; object-fit: contain;" draggable="false" onerror="this.src='https://placehold.co/50x20/e0e5ec/a3b1c6?text=Kurir'">
-                                    </div>
-                                    <div>
-                                        <span class="promo-pill-code" style="color: var(--accent-color); font-size: 13px;">${escapeHTML(cName)}</span>
-                                        <div class="promo-pill-desc">Estimasi: ${durasi}</div>
-                                    </div>
-                                </div>
-
-                                <div style="font-weight:700; color:var(--text-main); font-size: 13px; text-align: right;">
-                                    ${formatRupiah(price)}
-                                </div>
-                                
-                            </div>`;
+                        container.innerHTML += `<div class="promo-pill" style="cursor:pointer; display: flex; align-items: center;" onclick="window.selectCourier('${escapeHTML(companyRaw)}', '${escapeHTML(typeRaw)}', ${price}, '${escapeHTML(cName)}')"><div class="promo-pill-info" style="display: flex; align-items: center; gap: 12px; flex: 1;"><div style="width: 50px; height: 25px; display: flex; justify-content: center; align-items: center; background: #fff; padding: 2px 5px; border-radius: 6px; box-shadow: var(--neu-pressed-sm);"><img src="${logoUrl}" alt="Kurir" style="max-width: 100%; max-height: 100%; object-fit: contain;" draggable="false"></div><div><span class="promo-pill-code" style="color: var(--accent-color); font-size: 13px;">${escapeHTML(cName)}</span><div class="promo-pill-desc">Estimasi: ${durasi}</div></div></div><div style="font-weight:700; font-size: 13px;">${formatRupiah(price)}</div></div>`;
                     });
-                } catch (error) {
-                    let errMsg = error.message || "Gagal menghubungi kurir";
-                    if (errMsg.toLowerCase().includes("postal code") || errMsg.toLowerCase().includes("biteship")) {
-                        errMsg = "Kode pos tidak ditemukan atau tidak terjangkau kurir. HARAP UNTUK MEMMPERBAIKI KODE POS.";
-                    }
-                    container.innerHTML = `<div style="text-align:center; font-size:12px; color:#ff4757; padding: 20px;"><b>Gagal:</b> ${escapeHTML(errMsg)}</div>`;
-                }
+                } catch (error) { container.innerHTML = `<div style="text-align:center; font-size:12px; color:#ff4757; padding: 20px;"><b>Gagal:</b> Cek kode pos.</div>`; }
             }
 
-            Object.defineProperty(window, 'selectCourier', {
-                value: function(company, type, price, name) {
-                    selectedCourier = { company: String(company), type: String(type), price: parseInt(price) || 0, name: String(name) };
-                    shippingCost = parseInt(price) || 0;
-                    document.getElementById('summaryShippingVal').innerText = escapeHTML(name);
-                    document.getElementById('summaryShippingVal').style.color = "#27ae60";
-                    window.closeShippingModal(); renderCartItems();
-                },
-                writable: false,
-                configurable: false
-            });
-            
-            Object.defineProperty(window, 'openPaymentModal', {
-                value: function() { document.getElementById('paymentModal').classList.add('active'); },
-                writable: false,
-                configurable: false
-            });
-            
-            Object.defineProperty(window, 'closePaymentModal', {
-                value: function() { document.getElementById('paymentModal').classList.remove('active'); },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'selectCourier', { value: function(company, type, price, name) { selectedCourier = { company: String(company), type: String(type), price: parseInt(price) || 0, name: String(name) }; shippingCost = parseInt(price) || 0; document.getElementById('summaryShippingVal').innerText = escapeHTML(name); document.getElementById('summaryShippingVal').style.color = "#27ae60"; window.closeShippingModal(); renderCartItems(); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'openPaymentModal', { value: function() { document.getElementById('paymentModal').classList.add('active'); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'closePaymentModal', { value: function() { document.getElementById('paymentModal').classList.remove('active'); }, writable: false, configurable: false });
             
             Object.defineProperty(window, 'selectPayment', {
-                value: function(id, pct, fixed, name) {
+                value: function(id, name) {
                     selectedPaymentMethodId = String(id);
-                    selectedPaymentPct = Number(pct) || 0;
-                    selectedPaymentFixed = Number(fixed) || 0;
                     document.getElementById('summaryPaymentVal').innerText = escapeHTML(name);
                     document.getElementById('summaryPaymentVal').style.color = "#27ae60";
-                    window.closePaymentModal(); 
-                    renderCartItems(); 
-                },
-                writable: false,
-                configurable: false
+                    window.closePaymentModal(); renderCartItems(); 
+                }, writable: false, configurable: false
             });
 
-            Object.defineProperty(window, 'openPromoModal', {
-                value: function() { 
-                    document.getElementById('promoModal').classList.add('active'); 
-                    document.getElementById('modalVoucherMsg').innerText = ''; 
-                    loadAvailableVouchers(); 
-                },
-                writable: false,
-                configurable: false
-            });
-            
-            Object.defineProperty(window, 'closePromoModal', {
-                value: function() { document.getElementById('promoModal').classList.remove('active'); },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'openPromoModal', { value: function() { document.getElementById('promoModal').classList.add('active'); document.getElementById('modalVoucherMsg').innerText = ''; loadAvailableVouchers(); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'closePromoModal', { value: function() { document.getElementById('promoModal').classList.remove('active'); }, writable: false, configurable: false });
 
             async function loadAvailableVouchers() {
-                const container = document.getElementById('availablePromosContainer');
-                container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div>';
+                const container = document.getElementById('availablePromosContainer'); container.innerHTML = '<div style="text-align:center; font-size:12px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> Mencari promo...</div>';
                 try {
                     const res = await fetch(`${BASE_URL}/api/vouchers`, { headers: { 'Authorization': `Bearer ${session.access_token}` } });
                     if (!res.ok) throw new Error('Error');
-                    const list = await res.json();
-                    container.innerHTML = '';
-                    if (list.length === 0) {
-                        container.innerHTML = '<div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 15px 0;">Belum ada promo tersedia.</div>';
-                        return;
-                    }
+                    const list = await res.json(); container.innerHTML = '';
+                    if (list.length === 0) { container.innerHTML = '<div style="text-align:center; font-size:11px; color:var(--text-muted); padding: 15px 0;">Belum ada promo.</div>'; return; }
                     list.forEach(v => {
-                        const safeCode = escapeHTML(String(v.code));
-                        const isUsed = activeVouchers.some(x => String(x.code) === safeCode);
-                        container.innerHTML += `
-                            <div class="promo-pill">
-                                <div class="promo-pill-info">
-                                    <span class="promo-pill-code" style="color: ${escapeHTML(v.color || 'var(--accent-color)')};">${safeCode}</span>
-                                    <div class="promo-pill-desc">${escapeHTML(String(v.title))}</div>
-                                </div>
-                                <button class="promo-pill-btn" onclick="window.executePromo('${safeCode}')" ${isUsed ? 'disabled style="opacity:0.5"' : ''}>${isUsed ? 'Terpakai' : 'Pakai'}</button>
-                            </div>`;
+                        const safeCode = escapeHTML(String(v.code)); const isUsed = activeVouchers.some(x => String(x.code) === safeCode);
+                        container.innerHTML += `<div class="promo-pill"><div class="promo-pill-info"><span class="promo-pill-code" style="color: ${escapeHTML(v.color || 'var(--accent-color)')};">${safeCode}</span><div class="promo-pill-desc">${escapeHTML(String(v.title))}</div></div><button class="promo-pill-btn" onclick="window.executePromo('${safeCode}')" ${isUsed ? 'disabled style="opacity:0.5"' : ''}>${isUsed ? 'Terpakai' : 'Pakai'}</button></div>`;
                     });
-                } catch (error) {
-                    container.innerHTML = '<div style="text-align:center; font-size:11px; color:#ff4757; padding: 15px 0;">Gagal memuat promo.</div>';
-                }
+                } catch (error) { container.innerHTML = '<div style="text-align:center; font-size:11px; color:#ff4757; padding: 15px 0;">Gagal memuat promo.</div>'; }
             }
 
-            Object.defineProperty(window, 'resetVoucher', {
-                value: function() { 
-                    activeVouchers = []; appliedDiscount = 0; 
-                    document.getElementById('promoSummaryBtn').classList.remove('active-promo'); 
-                    document.getElementById('summaryPromoVal').innerText = "Maksimal 2"; 
-                    document.getElementById('summaryPromoVal').style.color = ""; 
-                    renderCartItems(); window.closePromoModal();
-                    showNotification("Promo Direset", "Semua potongan promo dibatalkan.", "success");
-                },
-                writable: false,
-                configurable: false
-            });
-
-            Object.defineProperty(window, 'applyVoucherManual', {
-                value: function() {
-                    const code = escapeHTML(document.getElementById('manualVoucherInput').value.trim());
-                    if(code) { window.executePromo(code); document.getElementById('manualVoucherInput').value = ''; }
-                },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'resetVoucher', { value: function() { activeVouchers = []; appliedDiscount = 0; document.getElementById('promoSummaryBtn').classList.remove('active-promo'); document.getElementById('summaryPromoVal').innerText = "Maksimal 2"; document.getElementById('summaryPromoVal').style.color = ""; renderCartItems(); window.closePromoModal(); showNotification("Promo Direset", "Semua potongan promo dibatalkan.", "success"); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'applyVoucherManual', { value: function() { const code = escapeHTML(document.getElementById('manualVoucherInput').value.trim()); if(code) { window.executePromo(code); document.getElementById('manualVoucherInput').value = ''; } }, writable: false, configurable: false });
 
             Object.defineProperty(window, 'executePromo', {
                 value: async function(code) {
                     const safeCode = String(code);
-                    if(rawSubtotal === 0) return showNotification("Keranjang Kosong", "Masukkan barang ke keranjang terlebih dahulu.", "warning");
-                    if(activeVouchers.length >= 2) return showNotification("Batas Maksimal", "Hanya dapat menggunakan maksimal 2 promo sekaligus.", "warning");
+                    if(rawSubtotal === 0) return showNotification("Kosong", "Masukkan barang dulu.", "warning");
+                    if(activeVouchers.length >= 2) return showNotification("Batas Maksimal", "Maksimal 2 promo.", "warning");
                     if(activeVouchers.some(v => String(v.code) === safeCode)) return;
 
-                    const msgBox = document.getElementById('modalVoucherMsg');
-                    const btnManual = document.getElementById('btnApplyManual');
-                    
+                    const msgBox = document.getElementById('modalVoucherMsg'); const btnManual = document.getElementById('btnApplyManual');
                     msgBox.innerText = "Memeriksa kode..."; msgBox.style.color = "var(--accent-color)"; btnManual.disabled = true;
 
                     try {
-                        const res = await fetch(`${BASE_URL}/api/apply-voucher`, { 
-                            method: 'POST', 
-                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
-                            body: JSON.stringify({ code: safeCode, total_price: rawSubtotal }) 
-                        });
-                        
+                        const res = await fetch(`${BASE_URL}/api/apply-voucher`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ code: safeCode, total_price: rawSubtotal }) });
                         const result = await res.json();
                         if(!res.ok) { msgBox.innerText = escapeHTML(result.error); msgBox.style.color = "#ff4757"; return; }
-
                         const discountReturned = parseInt(result.discount_amount) || 0;
-                        if (discountReturned === 0) {
-                            window.closePromoModal(); showNotification("Promo Gagal", `Kode ${safeCode} valid, namun potongan Rp 0.`, "warning"); return;
-                        }
-
-                        activeVouchers.push({ code: safeCode, discount: discountReturned });
-                        applyPromoMath(); window.closePromoModal();
-                        showNotification("Berhasil", `Promo ${safeCode} berhasil dipakai! Diskon: ${formatRupiah(discountReturned)}`, "success");
-                    } catch (error) {
-                        msgBox.innerText = "Terjadi kesalahan sistem."; msgBox.style.color = "#ff4757";
-                    } finally { btnManual.disabled = false; }
-                },
-                writable: false,
-                configurable: false
+                        if (discountReturned === 0) { window.closePromoModal(); showNotification("Gagal", `Kode valid, potongan Rp 0.`, "warning"); return; }
+                        activeVouchers.push({ code: safeCode, discount: discountReturned }); applyPromoMath(); window.closePromoModal();
+                        showNotification("Berhasil", `Promo dipakai! Diskon: ${formatRupiah(discountReturned)}`, "success");
+                    } catch (error) { msgBox.innerText = "Terjadi kesalahan."; msgBox.style.color = "#ff4757"; } finally { btnManual.disabled = false; }
+                }, writable: false, configurable: false
             });
 
             async function syncPromosAndApply() {
                 for (let i = 0; i < activeVouchers.length; i++) {
                     try {
-                        const res = await fetch(`${BASE_URL}/api/apply-voucher`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
-                            body: JSON.stringify({ code: activeVouchers[i].code, total_price: rawSubtotal })
-                        });
-                        if (res.ok) {
-                            const result = await res.json();
-                            activeVouchers[i].discount = parseInt(result.discount_amount) || 0;
-                        }
+                        const res = await fetch(`${BASE_URL}/api/apply-voucher`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ code: activeVouchers[i].code, total_price: rawSubtotal }) });
+                        if (res.ok) { const result = await res.json(); activeVouchers[i].discount = parseInt(result.discount_amount) || 0; }
                     } catch (e) {}
                 }
                 applyPromoMath();
             }
 
             // =========================================================================
-            // CORE BUGFIX: REPLIKA MATEMATIKA SERVER (Transparansi Lapis Klien)
+            // REPLIKA MATEMATIKA SERVER (Sesuai Biaya Terbaru Pakasir)
             // =========================================================================
             function applyPromoMath() {
-                let disc = 0;
-                activeVouchers.forEach(v => disc += v.discount);
-                if (disc > rawSubtotal) disc = rawSubtotal;
-                appliedDiscount = disc;
+                let disc = 0; activeVouchers.forEach(v => disc += v.discount);
+                if (disc > rawSubtotal) disc = rawSubtotal; appliedDiscount = disc;
                 
-                // Menyamakan Nilai Fix Fee dengan di Server
-                const platform_fee_transaksi = 1000;
-                const platform_fee_ongkir = 1000;
-
-                // Basis kalkulasi total sebelum Fee Payment Gateway
+                const platform_fee_transaksi = 1000; const platform_fee_ongkir = 1000;
                 let baseAmount = rawSubtotal - appliedDiscount + shippingCost + platform_fee_transaksi + platform_fee_ongkir;
                 
-                // Kalkulasi Dinamis Pakkasir/Gateway (e.g., QRIS 0.7% atau VA 4000)
-                let finalGrossFloat = (baseAmount + selectedPaymentFixed) / (1.0 - selectedPaymentPct);
-                let finalGross = Math.round(finalGrossFloat);
+                adminFeeAmount = 0;
+
+                // Kalkulasi akurat biaya Gateway Pakasir
+                if (selectedPaymentMethodId === 'qris') {
+                    let calcFee = baseAmount <= 105000 ? (baseAmount * 0.007) + 310 : (baseAmount * 0.01);
+                    adminFeeAmount = Math.round(calcFee);
+                } else if (['bri_va', 'bni_va', 'atm_bersama_va', 'bnc_va', 'cimb_niaga_va', 'maybank_va', 'permata_va'].includes(selectedPaymentMethodId)) {
+                    adminFeeAmount = 3500;
+                } else if (['artha_graha_va', 'sampoerna_va'].includes(selectedPaymentMethodId)) {
+                    adminFeeAmount = 2000;
+                }
                 
-                adminFeeAmount = finalGross - baseAmount;
-                finalTotalRp = finalGross;
-                
-                updatePromoUI();
-                renderCostBreakdown(platform_fee_transaksi, platform_fee_ongkir);
+                finalTotalRp = baseAmount + adminFeeAmount;
+                updatePromoUI(); renderCostBreakdown(platform_fee_transaksi, platform_fee_ongkir);
             }
 
-            // Fungsi Baru: Menampilkan Rincian Tagihan ke Layar
             function renderCostBreakdown(fee_transaksi, fee_ongkir) {
                 const breakdownDiv = document.getElementById('costBreakdown');
-                if (cartItems.length === 0) {
-                    breakdownDiv.style.display = 'none';
-                    return;
-                }
+                if (cartItems.length === 0) { breakdownDiv.style.display = 'none'; return; }
 
-                let html = `
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
-                        <span>Total Belanja</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(rawSubtotal)}</span>
-                    </div>
-                `;
-                if (appliedDiscount > 0) {
-                    html += `
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:#27ae60;">
-                        <span>Diskon Promo</span><span style="font-weight:600;">- ${formatRupiah(appliedDiscount)}</span>
-                    </div>
-                    `;
-                }
-                if (shippingCost > 0) {
-                    html += `
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
-                        <span>Ongkos Kirim</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(shippingCost)}</span>
-                    </div>
-                    `;
-                }
+                let html = `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);"><span>Total Belanja</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(rawSubtotal)}</span></div>`;
+                if (appliedDiscount > 0) { html += `<div style="display:flex; justify-content:space-between; font-size:12px; color:#27ae60;"><span>Diskon Promo</span><span style="font-weight:600;">- ${formatRupiah(appliedDiscount)}</span></div>`; }
+                if (shippingCost > 0) { html += `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);"><span>Ongkos Kirim</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(shippingCost)}</span></div>`; }
+                html += `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);"><span>Biaya Layanan</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(fee_transaksi)}</span></div><div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);"><span>Biaya Penanganan</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(fee_ongkir)}</span></div>`;
                 
-                // Menyuntikkan Tampilan Fix Fee 1000 + 1000
-                html += `
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
-                        <span>Biaya Layanan</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(fee_transaksi)}</span>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
-                        <span>Biaya Penanganan</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(fee_ongkir)}</span>
-                    </div>
-                `;
-                
-                // Menampilkan Fee Payment Gateway jika ada
                 if (adminFeeAmount > 0) {
-                    html += `
-                    <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
-                        <span>Biaya Transaksi (${selectedPaymentMethodId === 'qris' ? '0.7%' : 'Fix'})</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(adminFeeAmount)}</span>
-                    </div>
-                    `;
+                    let feeLabel = selectedPaymentMethodId === 'qris' ? 'Gateway (0.7% / 1%)' : 'Gateway (Fix)';
+                    html += `<div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);"><span>Biaya ${feeLabel}</span><span style="font-weight:600; color:var(--text-main);">${formatRupiah(adminFeeAmount)}</span></div>`;
                 }
 
-                breakdownDiv.innerHTML = html;
-                breakdownDiv.style.display = 'flex';
-                
+                breakdownDiv.innerHTML = html; breakdownDiv.style.display = 'flex';
                 document.getElementById('ongkirLabel').innerHTML = `Total Tagihan`;
             }
 
             function updatePromoUI() {
-                const btn = document.getElementById('promoSummaryBtn');
-                btn.classList.add('active-promo');
-                document.getElementById('summaryPromoVal').innerText = `${activeVouchers.length} Promo Aktif`;
-                document.getElementById('summaryPromoVal').style.color = "#27ae60";
-                
+                const btn = document.getElementById('promoSummaryBtn'); btn.classList.add('active-promo'); document.getElementById('summaryPromoVal').innerText = `${activeVouchers.length} Promo Aktif`; document.getElementById('summaryPromoVal').style.color = "#27ae60";
                 const strikeDisplay = document.getElementById('strikePriceDisplay');
                 if (appliedDiscount > 0) {
                     strikeDisplay.style.display = 'block'; 
                     let baseWithoutDisc = rawSubtotal + shippingCost + 2000;
-                    let strikeFloat = (baseWithoutDisc + selectedPaymentFixed) / (1.0 - selectedPaymentPct);
-                    strikeDisplay.innerText = formatRupiah(Math.round(strikeFloat));
-                } else {
-                    strikeDisplay.style.display = 'none';
-                }
+                    let simFee = 0;
+                    if(selectedPaymentMethodId === 'qris') { simFee = baseWithoutDisc <= 105000 ? (baseWithoutDisc*0.007)+310 : (baseWithoutDisc*0.01); } 
+                    else if (['bri_va', 'bni_va', 'atm_bersama_va', 'bnc_va', 'cimb_niaga_va', 'maybank_va', 'permata_va'].includes(selectedPaymentMethodId)) { simFee = 3500; }
+                    else if (['artha_graha_va', 'sampoerna_va'].includes(selectedPaymentMethodId)) { simFee = 2000; }
+                    strikeDisplay.innerText = formatRupiah(Math.round(baseWithoutDisc + simFee));
+                } else { strikeDisplay.style.display = 'none'; }
                 document.getElementById('totalPriceDisplay').innerText = formatRupiah(finalTotalRp);
             }
 
@@ -1530,110 +899,76 @@
                     if(!selectedCourier) return showNotification("Kurir Kosong", "Pilih kurir terlebih dahulu.", "warning");
                     if(!selectedPaymentMethodId) return showNotification("Pembayaran Kosong", "Pilih metode pembayaran terlebih dahulu.", "warning");
                     
-                    const detailHTML = `
-                        <b>Tujuan:</b> ${escapeHTML(globalName)} (${escapeHTML(globalPhone)})<br>
-                        <b>Alamat:</b> ${escapeHTML(globalAddress)} [${escapeHTML(globalZip)}]<br>
-                        <b>Kurir:</b> ${escapeHTML(selectedCourier.name)} (${formatRupiah(shippingCost)})<br>
-                        <b>Biaya Layanan & Penanganan:</b> Rp 2.000<br>
-                        <b>Biaya Transaksi (Gateway):</b> ${formatRupiah(adminFeeAmount)}<br>
-                        <hr style="margin: 8px 0; border: 0; border-top: 1px dashed var(--shadow-dark);">
-                        <b>Total Bayar: <span style="color:var(--accent-color);">${formatRupiah(finalTotalRp)}</span></b>
-                    `;
-                    document.getElementById('confirmAddressDisplay').innerHTML = detailHTML;
-                    document.getElementById('confirmCheckoutModal').classList.add('active');
-                },
-                writable: false,
-                configurable: false
+                    const detailHTML = `<b>Tujuan:</b> ${escapeHTML(globalName)} (${escapeHTML(globalPhone)})<br><b>Alamat:</b> ${escapeHTML(globalAddress)} [${escapeHTML(globalZip)}]<br><b>Kurir:</b> ${escapeHTML(selectedCourier.name)} (${formatRupiah(shippingCost)})<br><b>Biaya Transaksi (Gateway):</b> ${formatRupiah(adminFeeAmount)}<br><hr style="margin: 8px 0; border: 0; border-top: 1px dashed var(--shadow-dark);"><b>Total Bayar: <span style="color:var(--accent-color);">${formatRupiah(finalTotalRp)}</span></b>`;
+                    document.getElementById('confirmAddressDisplay').innerHTML = detailHTML; document.getElementById('confirmCheckoutModal').classList.add('active');
+                }, writable: false, configurable: false
             });
             
-            Object.defineProperty(window, 'closeConfirmModal', {
-                value: function() { document.getElementById('confirmCheckoutModal').classList.remove('active'); },
-                writable: false,
-                configurable: false
-            });
+            Object.defineProperty(window, 'closeConfirmModal', { value: function() { document.getElementById('confirmCheckoutModal').classList.remove('active'); }, writable: false, configurable: false });
             
             // =========================================================================
-            // SECURITY PATCH: MIGRASI KE REDIRECT PAKKASIR
+            // EKSEKUSI CHECKOUT & TAMPILKAN CUSTOM POP-UP
+            // Mencegah Serangan Replay & Race Conditions (Double Click)
             // =========================================================================
             Object.defineProperty(window, 'executeCheckout', {
                 value: async function() {
-                    // ANTI SPAM ROBOT & RACE CONDITION
-                    if(isCheckingOut) return;
-                    isCheckingOut = true; 
-                    
-                    window.closeConfirmModal();
-                    const btn = document.getElementById('checkoutBtn');
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; 
-                    btn.disabled = true;
+                    if(isCheckingOut) return; isCheckingOut = true; 
+                    window.closeConfirmModal(); const btn = document.getElementById('checkoutBtn');
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Memproses...'; btn.disabled = true;
                     
                     try {
                         const voucherCodes = activeVouchers.map(v => String(v.code));
                         const payloadItems = cartItems.map(x => ({ product_id: x.product_id, quantity: Number(x.quantity) }));
 
-                        // HANYA MENGIRIM ONGKIR ASLI KE BACKEND. Backend akan menambahkan +2000 sendiri (Anti-Tampering #23)
+                        // Hanya mengirim data murni, backend tidak percaya kalkulasi klien (Anti Parameter Tampering #23)
                         const res = await fetch(`${BASE_URL}/api/checkout`, { 
                             method: 'POST', 
                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, 
-                            body: JSON.stringify({ 
-                                shipping_address: globalAddress, 
-                                phone_number: globalPhone, 
-                                recipient_name: globalName,
-                                postal_code: globalZip,
-                                destination_latitude: globalLat,  
-                                destination_longitude: globalLng, 
-                                courier_company: selectedCourier.company,
-                                courier_type: selectedCourier.type,
-                                shipping_cost: shippingCost, 
-                                payment_method: selectedPaymentMethodId, 
-                                items: payloadItems,
-                                used_vouchers: voucherCodes
-                            }) 
+                            body: JSON.stringify({ shipping_address: globalAddress, phone_number: globalPhone, recipient_name: globalName, postal_code: globalZip, destination_latitude: globalLat, destination_longitude: globalLng, courier_company: selectedCourier.company, courier_type: selectedCourier.type, shipping_cost: shippingCost, payment_method: selectedPaymentMethodId, items: payloadItems, used_vouchers: voucherCodes }) 
                         });
                         
                         const result = await res.json();
                         if(!res.ok) throw new Error(result.error || "Gagal memproses pesanan."); 
                         
-                        // Hapus memori angka badge setelah pesanan sukses
                         setLocalCache('bakoel_cart_qty', 0);
-                        
-                        const cartBadge = document.getElementById('cartBadge');
-                        const mobileCartBadge = document.getElementById('mobileCartBadge');
+                        const cartBadge = document.getElementById('cartBadge'); const mobileCartBadge = document.getElementById('mobileCartBadge');
                         if (cartBadge) { cartBadge.style.display = 'none'; cartBadge.innerText = '0'; }
                         if (mobileCartBadge) { mobileCartBadge.style.display = 'none'; mobileCartBadge.innerText = '0'; }
 
-                        // 🚀 REDIRECT KE URL PAKKASIR
-                        // Menggunakan fallback result.midtrans_token jika backend di-patch tanpa merubah nama key JSON
-                        let redirectUrl = result.payment_url || result.midtrans_token;
+                        if (result.payment_url) localStorage.setItem(`token_${result.order_id}`, result.payment_url);
+
+                        // TAMPILKAN CUSTOM MODAL POPUP DI HALAMAN KERANJANG
+                        document.getElementById('popupTotalAmount').innerText = formatRupiah(result.total_payment);
                         
-                        if (redirectUrl && String(redirectUrl).startsWith("http")) {
-                            // Simpan link pembayaran agar bisa dilanjutkan di halaman pesanan jika user menutup tab
-                            localStorage.setItem(`token_${result.order_id}`, redirectUrl);
+                        if (result.payment_method === 'qris') {
+                            document.getElementById('popupVaContainer').style.display = 'none';
+                            document.getElementById('popupQrisContainer').style.display = 'flex';
+                            document.getElementById('qrcodeBox').innerHTML = ""; 
                             
-                            // Lempar klien ke halaman Pakkasir
-                            window.location.href = redirectUrl;
+                            // Generate QR Code Lokal (Aman dari XSS karena disanitasi)
+                            new QRCode(document.getElementById("qrcodeBox"), {
+                                text: String(result.payment_number), 
+                                width: 180, height: 180,
+                                colorDark : "#000000", colorLight : "#ffffff",
+                                correctLevel : QRCode.CorrectLevel.M
+                            });
                         } else {
-                            // Jika pembayaran Cash/COD atau gateway tidak merespon URL dengan benar
-                            showNotification("Pesanan Dibuat!", "Silakan cek halaman riwayat pesanan Anda.", "success", "pesanan.html");
+                            document.getElementById('popupQrisContainer').style.display = 'none';
+                            document.getElementById('popupVaContainer').style.display = 'flex';
+                            document.getElementById('popupVaNumber').innerText = escapeHTML(String(result.payment_number));
                         }
+                        
+                        document.getElementById('customPaymentPopupModal').classList.add('active');
+                        
                     } catch(e) {
                         showNotification("Checkout Gagal", escapeHTML(e.message), "error");
                     } finally {
-                        btn.innerText = "Buat Pesanan"; 
-                        btn.disabled = false; 
-                        isCheckingOut = false; // Buka kembali kunci setelah selesai
+                        btn.innerText = "Buat Pesanan"; btn.disabled = false; isCheckingOut = false;
                     }
-                },
-                writable: false,
-                configurable: false
+                }, writable: false, configurable: false
             });
 
-            // Menghapus fungsi loadMidtransScriptDynamically() yang sudah usang
-
-            window.addEventListener('DOMContentLoaded', async () => { 
-                updateNavUI(); 
-                await fetchProductsCatalog(); 
-                loadCart(); 
-            });
+            window.addEventListener('DOMContentLoaded', async () => { updateNavUI(); await fetchProductsCatalog(); loadCart(); });
 
         })(); 
     </script>
