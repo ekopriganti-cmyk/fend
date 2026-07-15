@@ -16,7 +16,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet" crossorigin="anonymous" referrerpolicy="no-referrer">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" referrerpolicy="no-referrer" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" referrerpolicy="no-referrer"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecJQxFIb53auzZAHuH2n4WhAfrwD1xS57ZvHn1R-k4D1XhO1y2q/U0g/U..." crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" referrerpolicy="no-referrer"></script>
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
@@ -186,6 +186,18 @@
                 border: 2px solid var(--bg-color); display: flex; justify-content: center; align-items: center; z-index: 2;
             }
         }
+
+        /* ============================================================== */
+        /* FLOATING TOAST NOTIFICATION                                    */
+        /* ============================================================== */
+        .toast-container { position: fixed; top: 30px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 10px; pointer-events: none; width: 90%; max-width: 400px; align-items: center; }
+        .toast { background: var(--bg-color); padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 30px rgba(0,0,0,0.1), var(--neu-flat); display: flex; align-items: center; gap: 12px; font-size: 13px; font-weight: 700; color: var(--text-main); opacity: 0; transform: translateY(-20px) scale(0.9); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        [data-theme="dark"] .toast { box-shadow: 0 10px 30px rgba(0,0,0,0.5), var(--neu-flat); }
+        .toast.show { opacity: 1; transform: translateY(0) scale(1); }
+        .toast-icon { font-size: 18px; }
+        .toast-icon.success { color: #27ae60; }
+        .toast-icon.error { color: #ff4757; }
+        .toast-icon.warning { color: #e67e22; }
     </style>
 <script src="analytics.js" async defer></script>     
 </head>
@@ -283,17 +295,23 @@
                     <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-bottom: 10px;">
                         <img src="https://upload.wikimedia.org/wikipedia/commons/a/a2/Logo_QRIS.svg" style="height: 18px;" alt="QRIS" draggable="false">
                     </div>
+                    
+                    <!-- TOMBOL DOWNLOAD QRIS HIGH-RES -->
+                    <button onclick="window.downloadQRIS()" class="neu-btn" style="padding: 8px 15px; font-size: 11px; margin-bottom: 10px; background: var(--bg-color); color: var(--accent-color); border: 1px dashed var(--accent-color); width: auto;">
+                        <i class="fas fa-download"></i> Simpan QRIS
+                    </button>
+                    
                     <p style="font-size: 11px; color: var(--text-muted); line-height: 1.4; font-weight: 500;">Buka aplikasi e-Wallet atau m-Banking Anda, lalu scan QR Code di atas.</p>
                 </div>
 
                 <!-- VA Container -->
                 <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
+                    <div id="popupVaLabel" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
-                        <span id="popupVaNumber" style="font-size: 18px; font-weight: 700; color: var(--text-main); letter-spacing: 2px; word-break: break-all;">-</span>
-                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center;"><i class="fas fa-copy"></i></button>
+                        <span id="popupVaNumber" style="font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 1px; word-break: break-all;">-</span>
+                        <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fas fa-copy"></i></button>
                     </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Salin dan transfer tepat sesuai nominal agar otomatis terverifikasi oleh sistem.</p>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Sistem akan memverifikasi pembayaran Anda secara otomatis.</p>
                 </div>
             </div>
             
@@ -368,7 +386,7 @@
                         <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" class="pay-logo-img" alt="BNI" draggable="false"> BNI Virtual Account</span>
                     </div>
                 </div>
-                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('atm_bersama_va', 'ATM Bersama')">
+                <div class="promo-pill" style="cursor:pointer;" onclick="window.selectPayment('atm_bersama_va', 'ATM Bersama Virtual Account')">
                     <div class="promo-pill-info">
                         <span class="promo-pill-code pay-logo-wrapper"><img src="https://upload.wikimedia.org/wikipedia/commons/a/a5/ATM_Bersama_logo.svg" class="pay-logo-img" alt="ATM Bersama" draggable="false"> ATM Bersama VA</span>
                     </div>
@@ -440,12 +458,12 @@
         </div>
     </div>
 
-    <!-- Modal Notifikasi -->
+    <!-- Modal Notifikasi Biasa -->
     <div class="modal-overlay" id="notificationModal">
         <div class="modal-content" style="max-width: 320px; text-align: center; align-items: center; padding: 30px 20px;">
             <div id="notifIcon" style="font-size: 45px; margin-bottom: 15px; display: flex; justify-content: center; width: 100%;"></div>
             <h3 id="notifTitle" style="font-size: 18px; font-weight: 700; margin-bottom: 8px; width: 100%;">Judul</h3>
-            <p id="notifMessage" style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; width: 100%;">Pesan</p>
+            <p id="notifMessage" style="font-size: 13px; color: var(--text-muted); margin-bottom: 25px; line-height: 1.5; width: 100%; word-break: break-word;">Pesan</p>
             <button class="neu-btn" id="notifBtn" style="width: 100%;">Mengerti</button>
         </div>
     </div>
@@ -519,7 +537,7 @@
             let allProducts = []; let cartItems = []; let rawSubtotal = 0; let finalTotalRp = 0; let appliedDiscount = 0; let activeVouchers = []; 
             let globalName = ""; let globalAddress = ""; let globalPhone = ""; let globalZip = ""; let globalLat = null; let globalLng = null; 
             let selectedCourier = null; let shippingCost = 0; let selectedPaymentMethodId = null; let adminFeeAmount = 0;
-            let map, marker; let itemToDeleteOriginalType = null; let isCheckingOut = false;
+            let map, marker; let itemToDeleteOriginalType = null; let isCheckingOut = false; let activePaymentOrderId = null;
             let pendingDeltas = {}; let syncTimeout = {}; let activeNetworkRequests = 0;
 
             const themeToggle = document.getElementById('themeToggle');
@@ -532,8 +550,41 @@
                 document.getElementById('switchIcon').classList.replace(isDark ? 'fa-moon' : 'fa-sun', isDark ? 'fa-sun' : 'fa-moon');
             });
 
-            // Utils & UI Sync
-            function showNotification(title, message, type, redirectUrl = null) {
+            // =========================================================================
+            // FLOATING TOAST NOTIFICATION
+            // =========================================================================
+            window.showToast = function(message, type = 'success') {
+                let container = document.getElementById('toastContainer');
+                if (!container) {
+                    container = document.createElement('div');
+                    container.id = 'toastContainer';
+                    container.className = 'toast-container';
+                    document.body.appendChild(container);
+                }
+
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                
+                let iconClass = 'fa-check-circle success';
+                if (type === 'error') iconClass = 'fa-times-circle error';
+                if (type === 'warning') iconClass = 'fa-exclamation-triangle warning';
+                
+                toast.innerHTML = `<i class="fas ${iconClass} toast-icon"></i> <span>${escapeHTML(message)}</span>`;
+                container.appendChild(toast);
+                
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+                
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    setTimeout(() => {
+                        if(toast.parentNode) toast.parentNode.removeChild(toast);
+                    }, 400); 
+                }, 3000);
+            };
+
+            window.showNotification = function(title, message, type, redirectUrl = null) {
                 const notifModal = document.getElementById('notificationModal');
                 const notifIcon = document.getElementById('notifIcon');
                 const notifTitle = document.getElementById('notifTitle');
@@ -542,19 +593,17 @@
 
                 if(type === 'success') { notifIcon.innerHTML = '<i class="fas fa-check-circle" style="color: #27ae60;"></i>'; notifTitle.style.color = '#27ae60'; notifBtn.innerText = 'Lanjut'; }
                 else if(type === 'error') { notifIcon.innerHTML = '<i class="fas fa-times-circle" style="color: #ff4757;"></i>'; notifTitle.style.color = '#ff4757'; notifBtn.innerText = 'Tutup'; }
-                else if(type === 'warning') { notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>'; notifTitle.style.color = '#e67e22'; notifBtn.innerText = 'Mengerti'; }
+                else if(type === 'warning') { notifIcon.innerHTML = '<i class="fas fa-exclamation-triangle" style="color: #e67e22;"></i>'; notifTitle.style.color = '#e67e22'; notifBtn.innerText = redirectUrl ? 'Login' : 'Mengerti'; }
 
                 notifTitle.textContent = String(title); notifMessage.textContent = String(message);
                 notifBtn.onclick = function() { notifModal.classList.remove('active'); if(redirectUrl) window.location.href = escapeHTML(redirectUrl); };
                 notifModal.classList.add('active');
-            }
+            };
 
-            Object.defineProperty(window, 'copyToClipboard', {
-                value: function(elementId) {
-                    const text = document.getElementById(elementId).innerText;
-                    navigator.clipboard.writeText(text).then(() => { showNotification("Disalin", "Nomor berhasil disalin ke clipboard.", "success"); }).catch(err => { showNotification("Gagal", "Gagal menyalin nomor.", "error"); });
-                }, writable: false, configurable: false
-            });
+            window.copyToClipboard = function(elementId) {
+                const text = document.getElementById(elementId).innerText;
+                navigator.clipboard.writeText(text).then(() => { window.showToast("Nomor berhasil disalin ke clipboard!", "success"); }).catch(err => { window.showToast("Gagal menyalin nomor.", "error"); });
+            };
 
             async function updateNavUI() {
                 const loginBtn = document.getElementById('navLoginBtn');
@@ -570,7 +619,6 @@
                         else if(globalAddress && globalPhone) { document.getElementById('summaryAddressVal').innerText = "Belum Ada Kodepos"; document.getElementById('summaryAddressVal').style.color = "var(--text-main)"; }
                         else { document.getElementById('summaryAddressVal').innerText = "Belum Diatur"; }
 
-                        // Tampilkan Profil jika sudah login
                         const rawDisplayName = userData.nama_panggilan || (userData.nama_lengkap ? userData.nama_lengkap.split(' ')[0] : "User");
                         const displayName = escapeHTML(rawDisplayName);
                         const avatarUrl = `https://api.dicebear.com/7.x/micah/svg?seed=${encodeURIComponent(displayName)}&backgroundColor=e0e5ec&baseColor=f9c9b6`;
@@ -583,7 +631,6 @@
             }
 
             async function syncBadges(token) {
-                // 1. Perisai Keranjang (Tampil walau dari cache)
                 let cartQty = getLocalCache('bakoel_cart_qty');
                 if (cartQty === null) {
                     try {
@@ -603,7 +650,6 @@
                     if (mcBadge) { mcBadge.style.display = cartQty > 0 ? 'flex' : 'none'; mcBadge.innerText = badgeText; }
                 }
 
-                // 2. Perisai Voucher
                 let promoQty = getLocalCache('bakoel_promo_qty');
                 if (promoQty === null) {
                     try {
@@ -622,7 +668,6 @@
                     if(mpBadge) { mpBadge.style.display = promoQty > 0 ? 'flex' : 'none'; mpBadge.innerText = promoQty; }
                 }
 
-                // 3. Perisai Pesanan Aktif
                 let orderQty = getLocalCache('bakoel_order_qty');
                 if (orderQty === null) {
                     try {
@@ -660,7 +705,6 @@
                     document.getElementById('totalPriceDisplay').innerText = "Rp 0"; document.getElementById('costBreakdown').style.display = 'none';
                     const btnCheckout = document.getElementById('checkoutBtn'); if(btnCheckout) { btnCheckout.disabled = true; btnCheckout.innerHTML = 'Buat Pesanan'; }
                     
-                    // Reset UI Badge Jika Kosong
                     const cartBadge = document.getElementById('cartBadge');
                     const mobileCartBadge = document.getElementById('mobileCartBadge');
                     if(cartBadge) cartBadge.style.display = 'none';
@@ -699,7 +743,6 @@
                 container.innerHTML = ''; container.appendChild(fragment); rawSubtotal = total;
                 try { localStorage.setItem('bakoel_cart_qty', JSON.stringify({ data: currentCartTotalQty, expiry: Date.now() + CACHE_TTL })); } catch(e){}
 
-                // Update UI Badge Keranjang secara Realtime
                 const badgeText = currentCartTotalQty > 99 ? '99+' : currentCartTotalQty;
                 const cBadge = document.getElementById('cartBadge');
                 const mcBadge = document.getElementById('mobileCartBadge');
@@ -729,7 +772,7 @@
                     const currentQty = parseInt(originalItem.quantity) || 0; const parsedDelta = parseInt(delta) || 0; let newQty = currentQty + parsedDelta;
                     if(newQty < 1) return window.confirmDelete(safeId);
                     const availableStock = parseInt(originalItem.available_stock) || 0;
-                    if (newQty > availableStock) { showNotification("Stok Mentok", `Sisa stok: ${availableStock} Pcs.`, "warning"); if (currentQty >= availableStock) return; newQty = availableStock; }
+                    if (newQty > availableStock) { window.showToast(`Sisa stok: ${availableStock} Pcs.`, "warning"); if (currentQty >= availableStock) return; newQty = availableStock; }
                     originalItem.quantity = newQty; renderCartItems(); 
 
                     const checkoutBtn = document.getElementById('checkoutBtn'); if (checkoutBtn) { checkoutBtn.disabled = true; checkoutBtn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Menyinkronkan...'; }
@@ -745,7 +788,7 @@
                                 const safeProductId = isNaN(originalItem.product_id) ? String(originalItem.product_id) : Number(originalItem.product_id);
                                 const res = await fetch(`${BASE_URL}/api/cart`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ product_id: safeProductId, quantity: accumulatedDelta }) });
                                 if (!res.ok) throw new Error("Ditolak Server");
-                            } catch (e) { showNotification("Kesalahan", "Gagal memperbarui jumlah.", "error"); setTimeout(() => window.location.reload(), 1500); } finally { activeNetworkRequests--; }
+                            } catch (e) { window.showToast("Gagal memperbarui jumlah.", "error"); setTimeout(() => window.location.reload(), 1500); } finally { activeNetworkRequests--; }
                         }
                         if (Object.keys(syncTimeout).length === 0 && activeNetworkRequests === 0) { const btn = document.getElementById('checkoutBtn'); if (btn) { btn.disabled = (finalTotalRp === 0 && cartItems.length > 0) || !globalZip || !selectedCourier || !selectedPaymentMethodId; btn.innerHTML = 'Buat Pesanan'; } }
                     }, 600); 
@@ -763,7 +806,7 @@
                         const res = await fetch(`${BASE_URL}/api/cart`, { method: 'DELETE', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` }, body: JSON.stringify({ id: String(targetId) }) });
                         if (!res.ok) throw new Error("Ditolak Server");
                         cartItems = cartItems.filter(x => String(x.id) !== String(targetId)); renderCartItems();
-                    } catch (e) { showNotification("Gagal", `Tidak dapat menghapus barang.`, "error"); } finally { const btn = document.getElementById('checkoutBtn'); if (btn && cartItems.length > 0) { btn.disabled = (!globalZip || !selectedCourier || !selectedPaymentMethodId); btn.innerHTML = 'Buat Pesanan'; } }
+                    } catch (e) { window.showToast(`Tidak dapat menghapus barang.`, "error"); } finally { const btn = document.getElementById('checkoutBtn'); if (btn && cartItems.length > 0) { btn.disabled = (!globalZip || !selectedCourier || !selectedPaymentMethodId); btn.innerHTML = 'Buat Pesanan'; } }
                 }, writable: false, configurable: false
             });
 
@@ -808,12 +851,12 @@
                             document.getElementById('summaryAddressVal').innerText = "Tersimpan"; document.getElementById('summaryAddressVal').style.color = "#27ae60";
                             selectedCourier = null; shippingCost = 0; document.getElementById('summaryShippingVal').innerText = "Klik untuk Pilih"; document.getElementById('summaryShippingVal').style.color = "var(--text-main)";
                             window.closeAddressModal(); renderCartItems(); window.openShippingModal(); 
-                        } catch (error) { showNotification("Gagal", "Kesalahan saat menyimpan alamat.", "error"); } finally { btn.innerHTML = originalText; btn.disabled = false; }
-                    } else { showNotification("Alamat Belum Lengkap", "Pastikan Nama, No WA, Kodepos, dan Alamat terisi semua.", "warning"); }
+                        } catch (error) { window.showToast("Kesalahan saat menyimpan alamat.", "error"); } finally { btn.innerHTML = originalText; btn.disabled = false; }
+                    } else { window.showNotification("Alamat Belum Lengkap", "Pastikan Nama, No WA, Kodepos, dan Alamat terisi semua.", "warning"); }
                 }, writable: false, configurable: false
             });
 
-            Object.defineProperty(window, 'openShippingModal', { value: function() { if(!globalZip || !globalAddress) return showNotification("Kodepos Kosong", "Atur alamat pengiriman terlebih dahulu.", "warning"); document.getElementById('shippingModal').classList.add('active'); fetchShippingRates(); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'openShippingModal', { value: function() { if(!globalZip || !globalAddress) return window.showNotification("Kodepos Kosong", "Atur alamat pengiriman terlebih dahulu.", "warning"); document.getElementById('shippingModal').classList.add('active'); fetchShippingRates(); }, writable: false, configurable: false });
             Object.defineProperty(window, 'closeShippingModal', { value: function() { document.getElementById('shippingModal').classList.remove('active'); }, writable: false, configurable: false });
 
             async function fetchShippingRates() {
@@ -868,14 +911,14 @@
                 } catch (error) { container.innerHTML = '<div style="text-align:center; font-size:11px; color:#ff4757; padding: 15px 0;">Gagal memuat promo.</div>'; }
             }
 
-            Object.defineProperty(window, 'resetVoucher', { value: function() { activeVouchers = []; appliedDiscount = 0; document.getElementById('promoSummaryBtn').classList.remove('active-promo'); document.getElementById('summaryPromoVal').innerText = "Maksimal 2"; document.getElementById('summaryPromoVal').style.color = ""; renderCartItems(); window.closePromoModal(); showNotification("Promo Direset", "Semua potongan promo dibatalkan.", "success"); }, writable: false, configurable: false });
+            Object.defineProperty(window, 'resetVoucher', { value: function() { activeVouchers = []; appliedDiscount = 0; document.getElementById('promoSummaryBtn').classList.remove('active-promo'); document.getElementById('summaryPromoVal').innerText = "Maksimal 2"; document.getElementById('summaryPromoVal').style.color = ""; renderCartItems(); window.closePromoModal(); window.showToast("Semua potongan promo dibatalkan.", "success"); }, writable: false, configurable: false });
             Object.defineProperty(window, 'applyVoucherManual', { value: function() { const code = escapeHTML(document.getElementById('manualVoucherInput').value.trim()); if(code) { window.executePromo(code); document.getElementById('manualVoucherInput').value = ''; } }, writable: false, configurable: false });
 
             Object.defineProperty(window, 'executePromo', {
                 value: async function(code) {
                     const safeCode = String(code);
-                    if(rawSubtotal === 0) return showNotification("Kosong", "Masukkan barang dulu.", "warning");
-                    if(activeVouchers.length >= 2) return showNotification("Batas Maksimal", "Maksimal 2 promo.", "warning");
+                    if(rawSubtotal === 0) return window.showNotification("Kosong", "Masukkan barang dulu.", "warning");
+                    if(activeVouchers.length >= 2) return window.showNotification("Batas Maksimal", "Maksimal 2 promo.", "warning");
                     if(activeVouchers.some(v => String(v.code) === safeCode)) return;
 
                     const msgBox = document.getElementById('modalVoucherMsg'); const btnManual = document.getElementById('btnApplyManual');
@@ -886,9 +929,9 @@
                         const result = await res.json();
                         if(!res.ok) { msgBox.innerText = escapeHTML(result.error); msgBox.style.color = "#ff4757"; return; }
                         const discountReturned = parseInt(result.discount_amount) || 0;
-                        if (discountReturned === 0) { window.closePromoModal(); showNotification("Gagal", `Kode valid, potongan Rp 0.`, "warning"); return; }
+                        if (discountReturned === 0) { window.closePromoModal(); window.showNotification("Gagal", `Kode valid, potongan Rp 0.`, "warning"); return; }
                         activeVouchers.push({ code: safeCode, discount: discountReturned }); applyPromoMath(); window.closePromoModal();
-                        showNotification("Berhasil", `Promo dipakai! Diskon: ${formatRupiah(discountReturned)}`, "success");
+                        window.showToast(`Promo dipakai! Diskon: ${formatRupiah(discountReturned)}`, "success");
                     } catch (error) { msgBox.innerText = "Terjadi kesalahan."; msgBox.style.color = "#ff4757"; } finally { btnManual.disabled = false; }
                 }, writable: false, configurable: false
             });
@@ -963,9 +1006,9 @@
 
             Object.defineProperty(window, 'processCheckout', {
                 value: function() {
-                    if(!globalAddress || !globalPhone || !globalZip) return showNotification("Alamat Belum Lengkap", "Harap atur Alamat Pengiriman dan Kodepos terlebih dahulu.", "warning");
-                    if(!selectedCourier) return showNotification("Kurir Kosong", "Pilih kurir terlebih dahulu.", "warning");
-                    if(!selectedPaymentMethodId) return showNotification("Pembayaran Kosong", "Pilih metode pembayaran terlebih dahulu.", "warning");
+                    if(!globalAddress || !globalPhone || !globalZip) return window.showNotification("Alamat Belum Lengkap", "Harap atur Alamat Pengiriman dan Kodepos terlebih dahulu.", "warning");
+                    if(!selectedCourier) return window.showNotification("Kurir Kosong", "Pilih kurir terlebih dahulu.", "warning");
+                    if(!selectedPaymentMethodId) return window.showNotification("Pembayaran Kosong", "Pilih metode pembayaran terlebih dahulu.", "warning");
                     
                     const detailHTML = `<b>Tujuan:</b> ${escapeHTML(globalName)} (${escapeHTML(globalPhone)})<br><b>Alamat:</b> ${escapeHTML(globalAddress)} [${escapeHTML(globalZip)}]<br><b>Kurir:</b> ${escapeHTML(selectedCourier.name)} (${formatRupiah(shippingCost)})<br><b>Biaya Transaksi (Gateway):</b> ${formatRupiah(adminFeeAmount)}<br><hr style="margin: 8px 0; border: 0; border-top: 1px dashed var(--shadow-dark);"><b>Total Bayar: <span style="color:var(--accent-color);">${formatRupiah(finalTotalRp)}</span></b>`;
                     document.getElementById('confirmAddressDisplay').innerHTML = detailHTML; document.getElementById('confirmCheckoutModal').classList.add('active');
@@ -975,7 +1018,7 @@
             Object.defineProperty(window, 'closeConfirmModal', { value: function() { document.getElementById('confirmCheckoutModal').classList.remove('active'); }, writable: false, configurable: false });
             
             // =========================================================================
-            // EKSEKUSI CHECKOUT & TAMPILKAN CUSTOM POP-UP (Anti Spam & Race Condition)
+            // EKSEKUSI CHECKOUT & TAMPILKAN CUSTOM POP-UP
             // =========================================================================
             Object.defineProperty(window, 'executeCheckout', {
                 value: async function() {
@@ -1003,10 +1046,10 @@
 
                         if (result.payment_url) {
                             localStorage.setItem(`token_${result.order_id}`, result.payment_url);
-                            // MENYIMPAN RAW PAYMENT NUMBER UNTUK PESANAN.HTML
                             localStorage.setItem(`paynum_${result.order_id}`, result.payment_number);
                         }
 
+                        activePaymentOrderId = result.order_id;
                         document.getElementById('popupTotalAmount').innerText = formatRupiah(result.total_payment);
                         
                         if (result.payment_method === 'qris') {
@@ -1023,18 +1066,81 @@
                         } else {
                             document.getElementById('popupQrisContainer').style.display = 'none';
                             document.getElementById('popupVaContainer').style.display = 'flex';
+                            
+                            // Mendapatkan Nama Bank secara dinamis
+                            let paymentName = document.getElementById('summaryPaymentVal').innerText || "VIRTUAL ACCOUNT";
+                            if (!paymentName.toLowerCase().includes("virtual account") && !paymentName.toLowerCase().includes("va")) {
+                                 paymentName += " Virtual Account";
+                            }
+                            
+                            document.getElementById('popupVaLabel').innerText = escapeHTML(paymentName.toUpperCase());
                             document.getElementById('popupVaNumber').innerText = escapeHTML(String(result.payment_number));
                         }
                         
                         document.getElementById('customPaymentPopupModal').classList.add('active');
                         
                     } catch(e) {
-                        showNotification("Checkout Gagal", escapeHTML(e.message), "error");
+                        window.showNotification("Checkout Gagal", escapeHTML(e.message), "error");
                     } finally {
                         btn.innerText = "Buat Pesanan"; btn.disabled = false; isCheckingOut = false;
                     }
                 }, writable: false, configurable: false
             });
+
+            // =========================================================================
+            // FITUR DOWNLOAD QRIS RESOLUSI TINGGI
+            // =========================================================================
+            window.downloadQRIS = function() {
+                if (!activePaymentOrderId) return;
+                
+                let rawPayNum = null;
+                try { rawPayNum = localStorage.getItem(`paynum_${activePaymentOrderId}`); } catch (e) {}
+                
+                if (!rawPayNum) {
+                    window.showToast("Data QRIS tidak ditemukan. Silakan cek menu pesanan.", "error");
+                    return;
+                }
+
+                const tempDiv = document.createElement("div");
+                tempDiv.style.position = "absolute";
+                tempDiv.style.left = "-9999px";
+                document.body.appendChild(tempDiv);
+
+                new QRCode(tempDiv, {
+                    text: String(rawPayNum),
+                    width: 1024,
+                    height: 1024,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H 
+                });
+
+                setTimeout(() => {
+                    let imgData = "";
+                    const canvas = tempDiv.querySelector("canvas");
+                    const img = tempDiv.querySelector("img");
+                    
+                    if (canvas) {
+                        imgData = canvas.toDataURL("image/png");
+                    } else if (img && img.src) {
+                        imgData = img.src;
+                    }
+
+                    if (imgData) {
+                        const a = document.createElement("a");
+                        a.href = imgData;
+                        a.download = `QRIS_BAKOEL_INV-${activePaymentOrderId.split('-')[0].toUpperCase()}.png`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        window.showToast("QRIS berhasil disimpan ke galeri!", "success");
+                    } else {
+                        window.showToast("Browser Anda menolak unduh gambar.", "error");
+                    }
+                    
+                    document.body.removeChild(tempDiv);
+                }, 300);
+            };
 
             window.addEventListener('DOMContentLoaded', async () => { updateNavUI(); await fetchProductsCatalog(); loadCart(); });
 
