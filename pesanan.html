@@ -347,7 +347,7 @@
         <a href="akun.html" class="bottom-nav-item" id="mobileAccountBtn"><i class="fas fa-user"></i><span>Akun</span></a>
     </nav>
 
-    <!-- Modal Notifikasi -->
+    <!-- Modal Notifikasi Biasa -->
     <div class="modal-overlay" id="notificationModal">
         <div class="modal-content" style="max-width: 320px; text-align: center; align-items: center; padding: 30px 20px;">
             <div id="notifIcon" style="font-size: 45px; margin-bottom: 15px; display: flex; justify-content: center; width: 100%;"></div>
@@ -475,12 +475,12 @@
 
                 <!-- VA Container -->
                 <div id="popupVaContainer" style="display: none; flex-direction: column; align-items: center;">
-                    <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;" id="popupVaLabel">Nomor Virtual Account</div>
+                    <div id="popupVaLabel" style="font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Nomor Virtual Account</div>
                     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; background: rgba(9, 132, 227, 0.05); border: 1px dashed var(--accent-color); padding: 12px 15px; border-radius: 12px; width: 100%;">
                         <span id="popupVaNumber" style="font-size: 16px; font-weight: 700; color: var(--text-main); letter-spacing: 1px; word-break: break-all;">-</span>
                         <button onclick="window.copyToClipboard('popupVaNumber')" style="background: var(--bg-color); border: none; color: var(--accent-color); cursor: pointer; font-size: 14px; width: 32px; height: 32px; border-radius: 50%; box-shadow: var(--neu-flat-sm); display: flex; justify-content: center; align-items: center; flex-shrink: 0;"><i class="fas fa-copy"></i></button>
                     </div>
-                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Pastikan nominal transfer sesuai agar otomatis terverifikasi oleh sistem.</p>
+                    <p style="font-size: 11px; color: var(--text-muted); margin-top: 15px; line-height: 1.4; font-weight: 500;">Sistem akan memverifikasi pembayaran Anda secara otomatis.</p>
                 </div>
             </div>
 
@@ -585,6 +585,9 @@
                 return "Rp " + parsed.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "."); 
             }
 
+            // =========================================================================
+            // FLOATING TOAST NOTIFICATION (AMAN & NON-BLOCKING)
+            // =========================================================================
             window.showToast = function(message, type = 'success') {
                 let container = document.getElementById('toastContainer');
                 if (!container) {
@@ -1341,7 +1344,13 @@
                     } else {
                         document.getElementById('popupQrisContainer').style.display = 'none';
                         document.getElementById('popupVaContainer').style.display = 'flex';
-                        document.getElementById('popupVaLabel').innerText = "Nomor Virtual Account";
+                        
+                        // Set label dinamis berdasarkan payment_type dari backend
+                        let paymentName = String(details.payment_type);
+                        if (!paymentName.toLowerCase().includes("virtual account") && !paymentName.toLowerCase().includes("va")) {
+                             paymentName += " Virtual Account";
+                        }
+                        document.getElementById('popupVaLabel').innerText = escapeHTML(paymentName.toUpperCase());
                         document.getElementById('popupVaNumber').innerText = escapeHTML(String(rawPayNum));
                     }
                 } catch (e) {
