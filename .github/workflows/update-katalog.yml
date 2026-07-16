@@ -16,7 +16,7 @@ jobs:
       - name: Membangunkan Render & Menyedot Data
         # Memakai fitur retry karena Render butuh 50 detik untuk bangun dari tidur
         run: |
-          curl -s --retry 5 --retry-delay 15 --retry-connrefused https://rust-vjn7.onrender.com/api/products > katalog.json
+          curl -s --retry 5 --retry-delay 15 --retry-connrefused https://rusty-c22o.onrender.com/api/products > katalog.json
           
       - name: Simpan (Commit) ke GitHub Pages
         run: |
