@@ -4,14 +4,18 @@ on:
   schedule:
     # Berjalan otomatis setiap jam 00:00 WIB (17:00 UTC)
     - cron: '0 17 * * *'
-  workflow_dispatch: # Mengaktifkan tombol "Play" manual
+  workflow_dispatch: # Mengaktifkan tombol "Play" manual dari Dashboard
+
+# Tembok Izin: Wajib agar bot diizinkan menyimpan file katalog.json ke dalam repositori
+permissions:
+  contents: write
 
 jobs:
   sedot-data-gudang:
     runs-on: ubuntu-latest
     steps:
       - name: Membuka Repositori Bakoel
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4 # Diperbarui ke v4 agar peringatan Node.js 20 hilang
 
       - name: Membangunkan Render & Menyedot Data
         # Memakai fitur retry karena Render butuh 50 detik untuk bangun dari tidur
